@@ -91,7 +91,7 @@ TRACE_EVENT(sched_enq_deq_task,
 		__entry->cpus_allowed	= cpus_allowed;
 #ifdef CONFIG_SCHED_HMP
 		__entry->sum_scaled	= p->se.avg.runnable_avg_sum_scaled;
-		__entry->period		= p->se.avg.runnable_avg_period;
+		__entry->period		= p->se.avg.avg_period;
 		__entry->demand		= p->ravg.demand;
 #endif
 	),
@@ -139,7 +139,7 @@ TRACE_EVENT(sched_task_load,
 		__entry->pid		= p->pid;
 		__entry->sum		= p->se.avg.runnable_avg_sum;
 		__entry->sum_scaled	= p->se.avg.runnable_avg_sum_scaled;
-		__entry->period		= p->se.avg.runnable_avg_period;
+		__entry->period		= p->se.avg.avg_period;
 		__entry->demand		= p->ravg.demand;
 		__entry->small_task	= small_task;
 		__entry->boost		= boost;
