@@ -257,9 +257,11 @@ static struct rq *dl_task_offline_migration(struct rq *rq, struct task_struct *p
 	/*
 	 * By now the task is replenished and enqueued; migrate it.
 	 */
+	p->on_rq = TASK_ON_RQ_MIGRATING;
 	deactivate_task(rq, p, 0);
 	set_task_cpu(p, later_rq->cpu);
 	activate_task(later_rq, p, 0);
+	p->on_rq = TASK_ON_RQ_QUEUED;
 
 	if (!fallback)
 		resched_curr(later_rq);
@@ -1526,11 +1528,13 @@ retry:
 		goto retry;
 	}
 
+	next_task->on_rq = TASK_ON_RQ_MIGRATING;
 	deactivate_task(rq, next_task, 0);
 	next_task->on_rq = TASK_ON_RQ_MIGRATING;
 	set_task_cpu(next_task, later_rq->cpu);
 	next_task->on_rq = TASK_ON_RQ_QUEUED;
 	activate_task(later_rq, next_task, 0);
+	next_task->on_rq = TASK_ON_RQ_QUEUED;
 
 	resched_curr(later_rq);
 
@@ -1614,11 +1618,13 @@ static int pull_dl_task(struct rq *this_rq)
 
 			ret = 1;
 
+			p->on_rq = TASK_ON_RQ_MIGRATING;
 			deactivate_task(src_rq, p, 0);
 			p->on_rq = TASK_ON_RQ_MIGRATING;
 			set_task_cpu(p, this_cpu);
 			p->on_rq = TASK_ON_RQ_QUEUED;
 			activate_task(this_rq, p, 0);
+			p->on_rq = TASK_ON_RQ_QUEUED;
 			dmin = p->dl.deadline;
 
 			/* Is there any other task even earlier? */
