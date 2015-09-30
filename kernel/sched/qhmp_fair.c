@@ -3004,7 +3004,8 @@ static unsigned int power_cost_at_freq(int cpu, unsigned int freq)
 		 * capacity as a rough stand-in for real CPU power
 		 * numbers, assuming bigger CPUs are more power
 		 * hungry. */
-		return cpu_rq(cpu)->max_possible_capacity;
+		return cpu_rq(cpu)->efficiency *
+				(cpu_rq(cpu)->max_possible_freq / 1024);
 
 	if (!freq)
 		freq = min_max_freq;
@@ -3031,7 +3032,8 @@ unsigned int power_cost(u64 task_load, int cpu)
 	int total_static_pwr_cost = 0;
 
 	if (!sysctl_sched_enable_power_aware)
-		return rq->max_possible_capacity;
+		return cpu_rq(cpu)->efficiency *
+				(cpu_rq(cpu)->max_possible_freq / 1024);
 
 	/* calculate % of max freq needed */
 	demand = task_load * 100;
@@ -4215,11 +4217,6 @@ static inline int select_best_cpu(struct task_struct *p, int target,
 static inline int find_new_hmp_ilb(int type)
 {
 	return 0;
-}
-
-static inline int power_cost(u64 task_load, int cpu)
-{
-	return SCHED_CAPACITY_SCALE;
 }
 
 static inline int

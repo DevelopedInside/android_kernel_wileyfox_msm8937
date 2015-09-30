@@ -345,6 +345,20 @@ struct hmp_sched_stats {
 	u64 cumulative_runnable_avg;
 };
 
+struct sched_cluster {
+	struct list_head list;
+	struct cpumask cpus;
+	int id;
+	int max_power_cost;
+};
+
+extern unsigned long all_cluster_ids[];
+
+static inline int cluster_first_cpu(struct sched_cluster *cluster)
+{
+	return cpumask_first(&cluster->cpus);
+}
+
 #endif
 
 /* CFS-related fields in a runqueue */
@@ -642,6 +656,8 @@ struct rq {
 #endif
 
 #ifdef CONFIG_SCHED_HMP
+	struct sched_cluster *cluster;
+
 	/*
 	 * max_freq = user or thermal defined maximum
 	 * max_possible_freq = maximum supported by hardware
@@ -1195,7 +1211,10 @@ static inline void set_hmp_defaults(void) { }
 
 static inline void clear_reserved(int cpu) { }
 
-#define power_cost(...) 0
+static inline unsigned int power_cost(u64 task_load, int cpu)
+{
+	return SCHED_POWER_SCALE;
+}
 
 #define trace_sched_cpu_load(...)
 
