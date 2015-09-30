@@ -319,6 +319,12 @@ do {									\
 #ifdef CONFIG_SCHED_QHMP
 	P(mostly_idle_load);
 	P(mostly_idle_nr_run);
+	P(cluster->load_scale_factor);
+	P(cluster->capacity);
+	P(cluster->max_possible_capacity);
+	P(cluster->efficiency);
+	P(cluster->cur_freq);
+	P(cluster->max_freq);
 #else
 	P(cluster->static_cluster_pwr_cost);
 	P(cluster->load_scale_factor);
