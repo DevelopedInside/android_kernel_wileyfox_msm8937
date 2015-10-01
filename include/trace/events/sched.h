@@ -79,6 +79,7 @@ TRACE_EVENT(sched_enq_deq_task,
 		__field(unsigned int,	cpus_allowed		)
 #ifdef CONFIG_SCHED_HMP
 		__field(unsigned int,	demand			)
+		__field(unsigned int,	grp_id			)
 #ifdef CONFIG_SCHED_FREQ_INPUT
 		__field(unsigned int,	pred_demand		)
 #endif
@@ -97,6 +98,7 @@ TRACE_EVENT(sched_enq_deq_task,
 		__entry->cpus_allowed	= cpus_allowed;
 #ifdef CONFIG_SCHED_HMP
 		__entry->demand		= p->ravg.demand;
+		__entry->grp_id		= p->grp ? p->grp->id : 0;
 #ifdef CONFIG_SCHED_FREQ_INPUT
 		__entry->pred_demand	= p->ravg.pred_demand;
 #endif
@@ -105,7 +107,7 @@ TRACE_EVENT(sched_enq_deq_task,
 
 	TP_printk("cpu=%d %s comm=%s pid=%d prio=%d nr_running=%u cpu_load=%lu rt_nr_running=%u affine=%x"
 #ifdef CONFIG_SCHED_HMP
-		 " demand=%u"
+		 " demand=%u grp_id=%d"
 #ifdef CONFIG_SCHED_FREQ_INPUT
 		 " pred_demand=%u"
 #endif
@@ -116,7 +118,7 @@ TRACE_EVENT(sched_enq_deq_task,
 			__entry->prio, __entry->nr_running,
 			__entry->cpu_load, __entry->rt_nr_running, __entry->cpus_allowed
 #ifdef CONFIG_SCHED_HMP
-			, __entry->demand
+			, __entry->demand, __entry->grp_id
 #ifdef CONFIG_SCHED_FREQ_INPUT
 			, __entry->pred_demand
 #endif
@@ -169,6 +171,31 @@ TRACE_EVENT(sched_task_load,
 );
 
 TRACE_EVENT(sched_set_preferred_cluster,
+
+	TP_PROTO(struct related_thread_group *grp, u64 total_demand),
+
+	TP_ARGS(grp, total_demand),
+
+	TP_STRUCT__entry(
+		__field(		int,	id			)
+		__field(		u64,	demand			)
+		__field(		int,	cluster_first_cpu	)
+	),
+
+	TP_fast_assign(
+		__entry->id			= grp->id;
+		__entry->demand			= total_demand;
+		__entry->cluster_first_cpu	= grp->preferred_cluster ?
+							cluster_first_cpu(grp->preferred_cluster)
+							: -1;
+	),
+
+	TP_printk("group_id %d total_demand %llu preferred_cluster_first_cpu %d",
+			__entry->id, __entry->demand,
+			__entry->cluster_first_cpu)
+);
+
+DECLARE_EVENT_CLASS(sched_set_preferred_cluster,
 
 	TP_PROTO(struct related_thread_group *grp, u64 total_demand),
 

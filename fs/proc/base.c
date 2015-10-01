@@ -1372,7 +1372,6 @@ static const struct file_operations proc_pid_sched_init_task_load_operations = {
 	.release	= single_release,
 };
 
-#ifndef CONFIG_SCHED_QHMP
 static int sched_group_id_show(struct seq_file *m, void *v)
 {
 	struct inode *inode = m->private;
@@ -1434,7 +1433,6 @@ static const struct file_operations proc_pid_sched_group_id_operations = {
 	.llseek		= seq_lseek,
 	.release	= single_release,
 };
-#endif  /* !CONFIG_SCHED_QHMP */
 #endif	/* CONFIG_SCHED_HMP */
 
 #ifdef CONFIG_SCHED_AUTOGROUP
@@ -2797,9 +2795,7 @@ static const struct pid_entry tgid_base_stuff[] = {
 #endif
 #ifdef CONFIG_SCHED_HMP
 	REG("sched_init_task_load",      S_IRUGO|S_IWUSR, proc_pid_sched_init_task_load_operations),
-#ifndef CONFIG_SCHED_QHMP
 	REG("sched_group_id",      S_IRUGO|S_IWUGO, proc_pid_sched_group_id_operations),
-#endif
 #endif
 #ifdef CONFIG_SCHED_DEBUG
 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),

@@ -1370,6 +1370,7 @@ struct task_struct {
 	u64 last_cpu_selected_ts;
 #ifdef CONFIG_SCHED_QHMP
 	u64 run_start;
+	u64 last_sleep_ts;
 #endif
 	struct related_thread_group *grp;
 	struct list_head grp_list;
