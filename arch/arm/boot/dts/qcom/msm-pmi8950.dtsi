@@ -218,6 +218,7 @@
 			qcom,autoadjust-vfloat;
 			qcom,enable-hvdcp-9v;//TQY
 			qcom,fastchg-current-ma=<2500>;
+			qcom,override-usb-current;
 
 			qcom,float-voltage-comp=<0x8>;
 			qcom,fastchg-current-comp=<700>;
