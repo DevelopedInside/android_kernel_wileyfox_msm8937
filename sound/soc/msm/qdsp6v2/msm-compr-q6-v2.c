@@ -55,6 +55,8 @@
 #define AMR_WB_DTX_MODE 0
 
 
+#define MAX_AC3_PARAM_SIZE		(18*2*sizeof(int))
+
 const DECLARE_TLV_DB_LINEAR(compr_rx_vol_gain, 0,
 			    COMPRESSED_LR_VOL_MAX_STEPS);
 
