@@ -2308,6 +2308,8 @@ static int mdss_mdp_probe(struct platform_device *pdev)
 	if (rc)
 		pr_err("mdss smmu init failed\n");
 
+	mdss_mdp_set_supported_formats(mdata);
+
 	mdss_res->mdss_util->mdp_probe_done = true;
 
 	/*
