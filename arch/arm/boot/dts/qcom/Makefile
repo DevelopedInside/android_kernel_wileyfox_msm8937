@@ -193,9 +193,12 @@ else
 targets += dtbs
 targets += $(addprefix ../, $(dtb-y))
 
-$(obj)/../%.dtb: $(src)/%.dts FORCE
-        $(call if_changed_dep,dtc)
-
+# Hymost
+PROJECT := $(subst $\",,$(CONFIG_HY_PROJECT))
+#$(obj)/../%.dtb: $(src)/%.dts FORCE
+$(obj)/../%.dtb: $(src)/../$(PROJECT)/%.dts FORCE
+	$(call if_changed_dep,dtc)
+	@echo '		$(PROJECT) is  building ...'
 dtbs: $(addprefix $(obj)/,$(dtb-y))
 endif
 clean-files := *.dtb

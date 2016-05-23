@@ -39,6 +39,8 @@
 #include <linux/msm_bcl.h>
 #include <linux/ktime.h>
 #include "pmic-voter.h"
+#include "../input/touchscreen/mstar_drv_new/mstar_drv_extern.h"
+extern bool is_msg28xx;
 
 /* Mask/Bit helpers */
 #define _SMB_MASK(BITS, POS) \
@@ -444,7 +446,7 @@ module_param_named(
 	int, S_IRUSR | S_IWUSR
 );
 
-static int smbchg_default_hvdcp3_icl_ma = 3000;
+static int smbchg_default_hvdcp3_icl_ma = 2000;
 module_param_named(
 	default_hvdcp3_icl_ma, smbchg_default_hvdcp3_icl_ma,
 	int, S_IRUSR | S_IWUSR
@@ -4387,7 +4389,7 @@ static int smbchg_set_optimal_charging_mode(struct smbchg_chip *chip, int type)
 }
 
 #define DEFAULT_SDP_MA		100
-#define DEFAULT_CDP_MA		1500
+#define DEFAULT_CDP_MA		1800
 static int smbchg_change_usb_supply_type(struct smbchg_chip *chip,
 						enum power_supply_type type)
 {
@@ -6365,6 +6367,17 @@ static irqreturn_t src_detect_handler(int irq, void *_chip)
 		complete_all(&chip->src_det_raised);
 	else
 		complete_all(&chip->src_det_lowered);
+	if(is_msg28xx)
+	{
+		if(usb_present)
+		{
+			DrvFwCtrlChargerDetection(1);
+		}
+		else
+		{
+			DrvFwCtrlChargerDetection(0);
+		}
+	}
 
 	if (chip->hvdcp_3_det_ignore_uv)
 		goto out;
