@@ -71,7 +71,7 @@
 	eeprom2: qcom,eeprom@2 {
 		cell-index = <2>;
 		reg = <0x2>;
-		qcom,eeprom-name = "ov8856";
+	/*	qcom,eeprom-name = "ov8856"; */
 		compatible = "qcom,eeprom";
 		qcom,slave-addr = <0x6c>;
 		qcom,cci-master = <0>;
@@ -159,6 +159,7 @@
 		qcom,csiphy-sd-index = <0>;
 		qcom,csid-sd-index = <0>;
 		qcom,mount-angle = <90>;
+		qcom,eeprom-src = <&eeprom0>;
 		qcom,led-flash-src = <&led_flash0>;
 		qcom,actuator-src = <&actuator0>;
 		cam_vdig-supply = <&pm8937_l23>;
