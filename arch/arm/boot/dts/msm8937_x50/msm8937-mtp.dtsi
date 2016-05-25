@@ -75,11 +75,6 @@
 	pinctrl-0 = <&uart_console_active>;
 };
 
-&pmi_haptic{
-	qcom,wave-play-rate-us = <4165>;
-	qcom,actuator-type = "lra";
-};
-
 &spi_3 { /* BLSP1 QUP3 */
 	maxim_sti@0 {
 		status = "disabled";
