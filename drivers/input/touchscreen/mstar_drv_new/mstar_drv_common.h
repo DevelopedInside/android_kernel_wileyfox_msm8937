@@ -131,7 +131,7 @@
  * If this compile option is not defined, the function for virtual key handling will be disabled.
  * By default, this compile option is enabled.
  */
-#define CONFIG_TP_HAVE_KEY
+//#define CONFIG_TP_HAVE_KEY
 
 /*
  * Note.

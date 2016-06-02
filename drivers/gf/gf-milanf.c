@@ -63,9 +63,11 @@ static unsigned short g_vendorID;
 struct gf_key_map key_map[] =
 {
 	{  "POWER",  KEY_POWER  },
+#ifdef CONFIG_TP_HAVE_KEY
 	{  "HOME" ,  KEY_HOME   },
 	{  "MENU" ,  KEY_MENU   },
 	{  "BACK" ,  KEY_BACK   },
+#endif
 	{  "UP"   ,  KEY_UP     },
 	{  "DOWN" ,  KEY_DOWN   },
 	{  "LEFT" ,  KEY_LEFT   },
