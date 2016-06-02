@@ -5,13 +5,16 @@
 #ifndef __GF_COMMON_H
 #define __GF_COMMON_H
 
+#include <linux/wakelock.h>
+
 typedef struct {
 	dev_t			     devt;
 	struct spi_device	 *spi;
 	struct list_head	 device_entry;
 	struct input_dev     *input;
 	struct workqueue_struct *spi_wq;
-	struct work_struct   spi_work;
+	struct work_struct   work;
+	struct wake_lock     finger_wake_lock;
 	struct mutex         buf_lock;
 	struct mutex         frame_lock;
 	struct timer_list  	 gf_timer;
@@ -21,7 +24,7 @@ typedef struct {
 	struct regulator *vdd;
 	spinlock_t           spi_lock;
 	wait_queue_head_t    waiter;
-	unsigned		     users;
+    unsigned int	     users;
 	int 				 irq;
 	u8			         *buffer;
 	u8			         buf_status;

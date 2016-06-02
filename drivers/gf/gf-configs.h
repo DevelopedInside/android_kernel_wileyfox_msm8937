@@ -18,7 +18,20 @@ struct gf_configs v0_fdt_down_cfg[]=
 	{GF_MODE_CTRL0,0x4010},
 	{GF_MODE_CTRL1,0x2001}, 
 	{GF_MODE_CTRL2,0x0014}, 
-	{GF_PIXEL_CTRL6,0x0100},        
+	{GF_PIXEL_CTRL6,0x0100},
+	{GF_FDT_DELTA,0x157F},
+	{GF_FDT_AREA_NUM,0x0007},
+	{GF_FDT,0x0401},        /*fdt enabel, detect down*/
+};
+struct gf_configs v0_nav_fdt_down_cfg[]=
+{
+	{GF_IRQ_CTRL0, 0x0482}, /*enable fdt INT*/
+	{GF_MODE_CTRL0,0x4010},
+	{GF_MODE_CTRL1,0x2001}, 
+	{GF_MODE_CTRL2,0x0014}, 
+	{GF_PIXEL_CTRL6,0x0100},
+	{GF_FDT_DELTA,0x157F},
+	{GF_FDT_AREA_NUM,0x0000},
 	{GF_FDT,0x0001},        /*fdt enabel, detect down*/
 };
 struct gf_configs v0_fdt_up_cfg[]=
@@ -28,6 +41,7 @@ struct gf_configs v0_fdt_up_cfg[]=
 	{GF_MODE_CTRL1,0x2001}, 
 	{GF_MODE_CTRL2,0x0014}, 
 	{GF_PIXEL_CTRL6,0x0100},        
+	{GF_FDT_DELTA,0x137F},
 	{GF_FDT,0x0003},        /*fdt enabel, detect up*/
 };
 struct gf_configs v0_ff_cfg[]=
@@ -37,6 +51,7 @@ struct gf_configs v0_ff_cfg[]=
 	{GF_MODE_CTRL1,0x2001}, 
 	{GF_MODE_CTRL2,0x0032}, 
 	{GF_PIXEL_CTRL6,0x0100},       
+	{GF_FDT_DELTA,0x157F},
 	{GF_FDT,0x0001},        /*fdt enabel, detect down*/	
 };
 struct gf_configs v0_nav_cfg[]=
@@ -55,7 +70,7 @@ struct gf_configs v0_nav_img_cfg[]=
 };
 struct gf_configs v0_img_cfg[]=
 {
-	{GF_PIXEL_CTRL6,0x0100},       /*set rate 256*/
+	{GF_PIXEL_CTRL6,0x0080},       /*set rate 128*/
 	{GF_IRQ_CTRL0,0x0408},         /*enable data_int INT*/
 	{GF_PIXEL_CTRL1,0x0008},       /*set one_frame mode*/
 	{GF_PIXEL_CTRL0,0x0501},	

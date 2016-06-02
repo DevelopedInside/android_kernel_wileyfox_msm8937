@@ -1,7 +1,16 @@
 #ifndef __GF_REGS_H
 #define __GF_REGS_H
 
+#define GF_VENDORID_ADDR    0x0006
+#define GF_CHIP_ID0         0x0000
+#define GF_CHIP_ID1         0x0002
+#define GF_OTP_ADDR1        0x102
+#define GF_OTP_ADDR2        0x104
+#define GF_OTP_ADDR3        0x106
+
+
 #define GF_IRQ_CTRL0        0x0120  /* RW, Interrupt enable*/
+#define GF_IRQ_CTRL2        0x0124
 #define GF_IRQ_CTRL3        0x0126  /* RO, Interrupt flags*/
 #define GF_FDT_AREA_NUM     0x0CA   /* RW, threshold of touch num.*/
 
@@ -36,4 +45,5 @@
 #define GF_ENCRYPT_CTRL1    0x0072
 #define GF_ENCRYPT_CTRL2    0x0074
 
+#define GF_DATA_BUFFER        0xAAAA
 #endif

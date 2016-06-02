@@ -7,6 +7,9 @@
 
 #include <linux/types.h>
 
+#define GF_NET_EVENT_FB_BLACK 0
+#define GF_NET_EVENT_FB_UNBLACK 1
+
 struct gf_configs {
 	unsigned short addr;
 	unsigned short value;
@@ -19,6 +22,7 @@ struct gf_configs {
 #define CONFIG_IMG       5
 #define CONFIG_NAV_IMG   6
 #define GF_CFG_NAV_IMG_MAN   7
+#define CONFIG_NAV_FDT_DOWN  8
 
 #define GF_BUF_STA_MASK		(0x1<<7)
 #define	GF_BUF_STA_READY	(0x1<<7)
@@ -42,7 +46,7 @@ struct gf_ioc_transfer {
 	u8 reserve;
 	u16	addr;
 	u32 len;	
-	u32 buf;	
+	unsigned char* buf;	
 };
 
 struct gf_key {

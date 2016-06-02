@@ -330,7 +330,7 @@
 				config {
 					pins = "gpio9";
 					drive-strength = <16>;
-					bias-pull-down; 
+					bias-disable;
 				};
 			};
 		};
@@ -344,7 +344,7 @@
 				config {
 					pins = "gpio9";
 					drive-strength = <16>;
-					bias-pull-down; 
+					bias-disable;
 				};
 			};
 		};

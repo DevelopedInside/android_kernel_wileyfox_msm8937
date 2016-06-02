@@ -85,7 +85,7 @@ int gf_spi_read_bytes(gf_dev_t* gf_dev, u16 addr, u16 data_len,
     if(xfer != NULL)
 	xfer = NULL;
 
-    return 0;
+    return ret;
 }
 
 int gf_spi_write_bytes(gf_dev_t* gf_dev, u16 addr, u16 data_len,
@@ -137,7 +137,7 @@ int gf_spi_write_bytes(gf_dev_t* gf_dev, u16 addr, u16 data_len,
     if(xfer != NULL)
 		xfer = NULL;
 
-    return 0;
+    return ret-2;// ret-2: because have 2 bytes represent for length.
 }
 
 int gf_spi_read_word(gf_dev_t* gf_dev, u16 addr, u16* value)
@@ -148,7 +148,7 @@ int gf_spi_read_word(gf_dev_t* gf_dev, u16 addr, u16* value)
     mutex_lock(&gf_dev->buf_lock);
     status = gf_spi_read_bytes(gf_dev, addr, 2, gf_dev->buffer);
     buf = gf_dev->buffer + GF_RDATA_OFFSET;
-    *value = (u16)buf[0]<<8 | buf[1];
+    *value = ((u16)(buf[0]<<8)) | buf[1];
     mutex_unlock(&gf_dev->buf_lock);
 
     return status;
@@ -248,6 +248,10 @@ int gf_spi_send_cmd(gf_dev_t* gf_dev, unsigned char* cmd, int len)
 	
 	spi_message_init(&msg);
     xfer = kzalloc(sizeof(*xfer), GFP_KERNEL);
+	if( xfer == NULL){
+		pr_err("%s, No memory for command.\n",__func__);
+		return -ENOMEM;
+    }
     xfer->tx_buf = cmd;
     xfer->len = len;
     xfer->delay_usecs = 5;

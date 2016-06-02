@@ -52,6 +52,10 @@
 static struct class *gf_spi_class;
 static unsigned bufsiz = 14260; //88*108*1.5+4 Bytes
 static unsigned char g_frame_buf[14260]={0};
+static unsigned short g_vendorID;
+static unsigned char g_sendorID[16] = {0};
+static unsigned short g_fdt_delta = 0;
+static unsigned short g_tcode_img = 0;
 static DECLARE_BITMAP(minors, N_SPI_MINORS);
 static LIST_HEAD(device_list);
 static DEFINE_MUTEX(device_list_lock);
@@ -90,7 +94,57 @@ static void gf_reg_key_kernel(gf_dev_t *gf_dev)
 		printk(KERN_ERR "Failed to register GF as input device.\n");
 }
 
-static int gf_write_configs(gf_dev_t *gf_dev,struct gf_configs config[],int len)
+void readOTPByte(gf_dev_t* gf_dev,unsigned short usBank,
+					unsigned short usAddr,unsigned char* pValue)
+{
+    unsigned short data = 0;
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR1,0x0020);
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR2,usBank);
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR1,0x0021);
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR1,0x0020);
+
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR2,((usAddr<<8) & (0xFFFF)));
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR1,0x0022);
+    gf_spi_write_word(gf_dev,GF_OTP_ADDR1,0x0020);
+    gf_spi_read_word(gf_dev,GF_OTP_ADDR3,&data);
+
+    *pValue = data & 0xFF;
+}
+
+void gf_parse_otp(gf_dev_t* gf_dev,unsigned char* pSensorID)
+{
+    unsigned short i = 0;
+    unsigned char ucOTP[32] = {0};
+	unsigned char Tcode,Diff;
+	unsigned short Tcode_use,Diff_use,Diff_256;
+	
+    for(i=0;i<32;i++)
+    {
+        readOTPByte(gf_dev,(i>>2),(i & 0x03),ucOTP+i);
+		pr_info("OTP_BYTE[%d] = 0x%x \n",i,ucOTP[i]);
+    }
+			
+    memcpy(pSensorID,ucOTP,16);
+	Tcode = (ucOTP[22] & 0xF0) >> 4;
+	Diff = ucOTP[22] & 0x0F;
+
+	if((Tcode != 0) && (Diff != 0) && ((ucOTP[22] & ucOTP[23]) == 0)) 
+	{
+		Tcode_use = (Tcode + 1)*16;
+		Diff_use = (Diff + 2)*100;
+
+		Diff_256 = (Diff_use * 256) / Tcode_use;
+		pr_info("%s Tcode:0x%x(%d),Diff:0x%x(%d)\n",__func__,Tcode,Tcode,Diff,Diff);
+		pr_info("%s Tcode_use:0x%x(%d),Diff_use:0x%x(%d),Diff_256:0x%x(%d)\n",
+			        __func__,Tcode_use,Tcode_use,Diff_use,Diff_use,Diff_256,Diff_256);
+		g_fdt_delta = (((Diff_256/3)>>4)<<8)|0x7F;
+		g_tcode_img = Tcode_use;		
+	}
+	pr_info("%s g_tcode_img:0x%x,g_fdt_delta:0x%x",__func__,g_tcode_img,g_fdt_delta);
+} 
+
+
+static int gf_write_configs(gf_dev_t *gf_dev,struct gf_configs* config,int len)
 {
 	int cnt;
 	int length = len;
@@ -184,9 +238,10 @@ static void gf_hw_reset(gf_dev_t* gf_dev, u8 delay_ms)
     gpio_set_value(gf_dev->rst_gpio, 1);
     
     gpio_set_value(gf_dev->rst_gpio, 0);
-    mdelay(1);
+	//mdelay(1);
+	mdelay(3);
     gpio_set_value(gf_dev->rst_gpio, 1);
-    mdelay(1);
+	//mdelay(1);
 }
 
 /************* File Operations interfaces ********/
@@ -329,7 +384,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd,
 				mutex_unlock(&gf_dev->frame_lock);
 
 				mutex_lock(&gf_dev->buf_lock);
-				ret = copy_to_user((void __user *)(unsigned long)ioc->buf, tmpbuf, ioc->len);
+			ret = copy_to_user((void __user *)ioc->buf, tmpbuf, ioc->len);
 				mutex_unlock(&gf_dev->buf_lock);
 
 				if(ret) {
@@ -339,7 +394,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd,
 				}
 			} else if (ioc->cmd == GF_W) {
 				//printk(KERN_ERR "%s Write data from 0x%x, len = 0x%x\n",__func__,ioc->addr,ioc->len);
-				ret = copy_from_user(tmpbuf, (void __user *)(unsigned long)ioc->buf, ioc->len);
+			ret = copy_from_user(tmpbuf, (void __user *)ioc->buf, ioc->len);
 
 				if(ret){
 					printk(KERN_ERR "%s Failed to copy data from user to kernel.\n",__func__);
@@ -360,15 +415,27 @@ static long gf_ioctl(struct file *filp, unsigned int cmd,
 			retval = __get_user(command ,(u32 __user*)arg);
 			//printk(KERN_ERR "%s GF_IOC_CMD command is %x \n",__func__,command);
 			gf_spi_send_cmd(gf_dev,&command,1);
+		mdelay(1);
 			break;
 		case GF_IOC_CONFIG:
 			retval = __get_user(config_type, (u32 __user*)arg);
+			//add by pinot
+			printk("%s first config_type is %d \n",__func__,config_type);
 			if(config_type == CONFIG_FDT_DOWN){
 				if(g_vendorID == 0x0000)
 				{
 					p_cfg = v0_fdt_down_cfg;
 					cfg_len = sizeof(v0_fdt_down_cfg)/sizeof(struct gf_configs);
 				}
+			gf_write_configs(gf_dev,p_cfg,cfg_len);			
+			break;
+		}
+		else if(config_type == CONFIG_NAV_FDT_DOWN) {
+		    if(g_vendorID == 0x0000)
+			{
+				p_cfg = v0_nav_fdt_down_cfg;
+				cfg_len = sizeof(v0_nav_fdt_down_cfg)/sizeof(struct gf_configs);
+			}
 				gf_write_configs(gf_dev,p_cfg,cfg_len);
 				break;
 			}
@@ -388,6 +455,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd,
 					cfg_len = sizeof(v0_ff_cfg)/sizeof(struct gf_configs);
 				}
 				gf_write_configs(gf_dev,p_cfg,cfg_len);
+				printk("%s config_type_FF is ok %d \n",__func__,config_type);
 				break;
 			}
 			else if(config_type == CONFIG_NAV){
@@ -483,47 +551,70 @@ static long gf_ioctl(struct file *filp, unsigned int cmd,
 	return retval;
 }
 
+#ifdef CONFIG_COMPAT
+static long gf_compat_ioctl(struct file *filp, unsigned int cmd, 
+						unsigned long arg)
+{
+	return gf_ioctl(filp, cmd, (unsigned long)compat_ptr(arg));
+}
+#endif //CONFIG_COMPAT
 static unsigned int gf_poll(struct file *filp,struct poll_table_struct *wait)
 {
-	//gf_dev_t *gf_dev = filp->private_data;
-
-	return 0;
+    //gf_dev_t *gf_dev = filp->private_data;
+ 	pr_info("%s called.\n",__func__);
+    return 0;
 }
 
-#if 0
-static int gf_frame_handler(void* para)
+static void goodix_spi_work_func(struct work_struct *work)
 {
-	//gf_dev_t* gf_dev = (gf_dev_t*)para;
-
-	do
-	{
-
-
-	}while(!kthread_should_stop());
-
-	return 0;
+	gf_dev_t * gf_dev =NULL;
+	int ret = 0;
+	unsigned short irq_status = 0;
+        gf_dev = container_of(work, gf_dev_t, work);
+	ret = gf_spi_read_word(gf_dev,GF_IRQ_CTRL3,&irq_status);
+	//printk("%s,irq_status = %d,ret=%d\n",__func__,(int)irq_status,ret);
+	if(irq_status != 0x8) {
+	if(gf_dev->async) {
+		printk(KERN_ERR"kill_fasync!\n");
+		kill_fasync(&gf_dev->async,SIGIO,POLL_IN);
+		}
+	}
 }
-#endif
-
+	
 static irqreturn_t gf_irq(int irq, void* handle)
 {
 	gf_dev_t *gf_dev = (gf_dev_t *)handle;
-	
+	if(!wake_lock_active(&gf_dev->finger_wake_lock))
+	{
+		wake_lock_timeout(&gf_dev->finger_wake_lock,2*HZ);
+		printk("Finger is locked\n");
+        }
+//	unsigned short irq_status = 0;
+//	printk("glx %s g_reset_flag=%d\n",__func__,g_reset_flag);
 	if(g_reset_flag == 1){
 		g_reset_flag = 0;
 		return IRQ_HANDLED;
 	}
 
-	if(gf_dev->async) {
-		kill_fasync(&gf_dev->async,SIGIO,POLL_IN);
-	}
+	queue_work(gf_dev->spi_wq, &gf_dev->work);
+//	gf_spi_read_word(gf_dev,GF_IRQ_CTRL3,&irq_status);
+//	if(irq_status != 0x8) {
+//	if(gf_dev->async) {
+//		kill_fasync(&gf_dev->async,SIGIO,POLL_IN);
+//		}
+//	}
+
 	return IRQ_HANDLED;
 }
 
 static int gf_open(struct inode *inode, struct file *filp)
 {
 	gf_dev_t *gf_dev;
+    int cnt = 0;
 	int	status = -ENXIO;
+    unsigned short reg = 0;
+    unsigned short chip_id_1 = 0;
+	unsigned short chip_id_2 = 0;
 	//printk(KERN_ERR "%s BUILD INFO:l;sdkfjalskdjfa;lskdjfaslkdjfa;sl%s,%s\n",__func__,__DATE__,__TIME__);
 
 	mutex_lock(&device_list_lock);
@@ -549,6 +640,38 @@ static int gf_open(struct inode *inode, struct file *filp)
 		if(status == 0) {
 			gf_dev->users++;
 			filp->private_data = gf_dev;
+            /*1. disable irq*/
+            gf_disable_irq(gf_dev);
+            /*2. set chip to init state.*/
+            gf_hw_reset(gf_dev,0);
+            while(cnt < 10){
+                gf_spi_read_word(gf_dev,GF_IRQ_CTRL3,&reg);
+                pr_info("%s IRQ status : 0x%x ,cnt = %d",__func__,reg,cnt);
+                if(reg == 0x0100) {
+                    gf_spi_write_word(gf_dev,GF_IRQ_CTRL2,0x0100);
+                    break;
+                }
+                cnt++;
+            }
+            /*Get vendor id, chip id and parse OTPs*/
+        	gf_spi_read_word(gf_dev,GF_VENDORID_ADDR,&g_vendorID);
+        	pr_info("%s vendorID is 0x%04X \n", __func__, g_vendorID);
+        	gf_spi_read_word(gf_dev,GF_CHIP_ID0,&chip_id_1);
+        	gf_spi_read_word(gf_dev,GF_CHIP_ID1,&chip_id_2);
+        	pr_info("%s chipID is 0x%04x 0x%04x \n",__func__,chip_id_1,chip_id_2);
+        	pr_info("%s OTP Byte[0] ~ Byte[31] is: \n",__func__);
+        	gf_parse_otp(gf_dev,g_sendorID);
+
+        	if(g_tcode_img!=0 && g_fdt_delta!=0)
+        	{
+        		v0_fdt_down_cfg[5].value = g_fdt_delta;
+        		v0_ff_cfg[5].value = g_fdt_delta;
+        		v0_nav_fdt_down_cfg[5].value = g_fdt_delta;
+        		v0_fdt_up_cfg[5].value = (((g_fdt_delta>>8)-2)<<8)|0x7F;
+        		v0_img_cfg[0].value = g_tcode_img;
+        		pr_info("%s use img_tcode:0x%x fdt_delta:0x%x fdt_up_delta:0x%x from OTP\n",
+        			      __func__,g_tcode_img,g_fdt_delta,((((g_fdt_delta>>8)-2)<<8)|0x7F));
+        	}
 			nonseekable_open(inode, filp);
 			printk(KERN_ERR "%s Succeed to open device, bufsiz=%d. irq = %d\n",__func__,bufsiz,gf_dev->spi->irq);
 			gf_enable_irq(gf_dev);
@@ -581,7 +704,7 @@ static int gf_release(struct inode *inode, struct file *filp)
 {
 	gf_dev_t *gf_dev;
 	int    status = 0;
-
+	unsigned char idle_cmd = 0xC0;
 	mutex_lock(&device_list_lock);
 	gf_dev = filp->private_data;
 	filp->private_data = NULL;
@@ -594,6 +717,8 @@ static int gf_release(struct inode *inode, struct file *filp)
 		//disable_irq(gf_dev->spi->irq);
 		gf_disable_irq(gf_dev);
 	}
+	pr_info("%s set chip to IDLE.\n",__func__);
+	gf_spi_send_cmd(gf_dev,&idle_cmd,1);
 	mutex_unlock(&device_list_lock);
 
 	return status;
@@ -603,7 +728,10 @@ static const struct file_operations gf_fops = {
 	.owner =	THIS_MODULE,
 	.write =	gf_write,
 	.read =		gf_read,
-	.compat_ioctl = gf_ioctl,
+    .unlocked_ioctl = gf_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = gf_compat_ioctl,
+#endif// CONFIG_COMPAT
 	.open =		gf_open,
 	.release =	gf_release,
 	.poll   = gf_poll,
@@ -724,7 +852,7 @@ static int gf_probe(struct spi_device *spi)
 	struct gf_platform_data gf_pdata;
 	gf_dev_t *gf_dev = NULL;
 
-	printk("--------  Func:%s   start   ----------\n", __func__);
+	unsigned char idle_cmd = 0xc0;
 
 	gf_dev = kzalloc(sizeof(*gf_dev), GFP_KERNEL);
 
@@ -793,6 +921,7 @@ static int gf_probe(struct spi_device *spi)
 	spin_lock_init(&gf_dev->spi_lock);	
 	mutex_init(&gf_dev->buf_lock);
 	mutex_init(&gf_dev->frame_lock);
+	wake_lock_init(&gf_dev->finger_wake_lock, WAKE_LOCK_SUSPEND,"fingerprint_wake_lock");
 	//init_waitqueue_head(&gf_dev->waiter);
 
 #if 0
@@ -829,7 +958,7 @@ static int gf_probe(struct spi_device *spi)
 	gf_reg_key_kernel(gf_dev);
 
 	gf_dev->spi->mode = SPI_MODE_0; 
-	gf_dev->spi->max_speed_hz = 1000*1000; 
+	gf_dev->spi->max_speed_hz = 1000*1000; //gxl
 	gf_dev->spi->bits_per_word = 8; 
 	spi_setup(gf_dev->spi);
 
@@ -848,8 +977,12 @@ static int gf_probe(struct spi_device *spi)
 			dev_name(&gf_dev->spi->dev), gf_dev);
 #endif
 	if(!err) {
+		enable_irq_wake(gf_dev->irq);
 		gf_disable_irq(gf_dev);
 	}
+	
+	gf_dev->spi_wq = create_singlethread_workqueue("spi_wq");
+	INIT_WORK(&gf_dev->work, goodix_spi_work_func);
 
 	gf_hw_reset(gf_dev,0);	//chuntian		
 
@@ -871,8 +1004,11 @@ static int gf_probe(struct spi_device *spi)
 		printk(KERN_ERR "%s chip id is 0x%04x 0x%04x \n",__func__,chip_id_2,chip_id_1);
 	}
 #endif
+	gf_spi_send_cmd(gf_dev,&idle_cmd,1);
+    mdelay(1);
 	printk(KERN_ERR "%s GF installed.\n",__func__);
 	printk("--------  Func:%s   end   ----------\n", __func__);
+
 	return status;
 }
 
@@ -923,7 +1059,8 @@ static int gf_remove(struct spi_device *spi)
 	return 0;
 }
 
-static int gf_suspend(struct spi_device *spi, pm_message_t mesg)
+//static int gf_suspend(struct spi_device *spi, pm_message_t mesg)
+static int gf_suspend(struct device *dev)
 {
 	//gf_dev_t *gf_dev = spi_get_drvdata(spi);
 	printk(KERN_ERR "%s device suspend.\n",__func__);
@@ -931,13 +1068,19 @@ static int gf_suspend(struct spi_device *spi, pm_message_t mesg)
 	return 0;
 }
 
-static int gf_resume(struct spi_device *spi)
+//static int gf_resume(struct spi_device *spi)
+static int gf_resume(struct device *dev)
 {
 	//gf_dev_t *gf_dev = spi_get_drvdata(spi);
 	printk(KERN_ERR "%s device resume.\n",__func__);
-
 	return 0;
 }
+
+ static const struct dev_pm_ops gf_pm = {
+     .suspend = gf_suspend,
+     .resume = gf_resume,
+};
+
 
 #ifdef CONFIG_OF
 static struct of_device_id gf_of_match[] = {
@@ -955,11 +1098,12 @@ static struct spi_driver gf_spi_driver = {
 #ifdef CONFIG_OF
 		.of_match_table = gf_of_match,
 #endif
+		.pm = &gf_pm,
 	},
 	.probe =	gf_probe,
 	.remove =	gf_remove,
-	.suspend = gf_suspend,
-	.resume = gf_resume,
+//	.suspend = gf_suspend,
+//	.resume = gf_resume,
 };
 
 static int __init gf_init(void)
