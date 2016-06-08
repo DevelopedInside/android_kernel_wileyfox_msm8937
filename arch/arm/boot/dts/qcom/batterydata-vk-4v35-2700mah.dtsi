@@ -2,48 +2,49 @@
 qcom,vk2700mah_hy{
 
 	qcom,max-voltage-uv = <4350000>;
-	qcom,nom-batt-capacity-mah = <2600>;
+	qcom,nom-batt-capacity-mah = <2700>;
 	qcom,batt-id-kohm = <22>;
-	qcom,battery-beta = <3380>;
+	qcom,battery-beta = <3435>;
 	qcom,battery-type = "vk2700mah_hy";
-	qcom,chg-rslow-comp-c1 = <3491174>;
-	qcom,chg-rslow-comp-c2 = <4677366>;
-	qcom,chg-rs-to-rslow = <1182127>;
-	qcom,chg-rslow-comp-thr = <0xA0>;
-	qcom,checksum = <0x2C61>;
-	qcom,gui-version = "PMI8950GUI - 2.0.0.15";
+	qcom,chg-rslow-comp-c1 = <2648587>;
+	qcom,chg-rslow-comp-c2 = <2829130>;
+	qcom,chg-rs-to-rslow = <1025113>;
+	qcom,chg-rslow-comp-thr = <0x99>;
+	qcom,checksum = <0xDCCF>;
+	qcom,gui-version = "PMI8950GUI - 2.0.0.16";
 	qcom,fg-profile-data = [
-		 BB 83 B0 75 
-		 A2 79 05 6C 
-		 5F 83 94 6D 
-		 61 88 94 8F 
-		 0F 82 37 9A 
-		 03 BD 83 C9 
-		 56 0F F1 83 
-		 70 7C FE 7B 
-		 4B 74 4E 83 
-		 A1 70 35 69 
-		 39 84 3D 82 
-		 F5 99 31 BD 
-		 29 CA 5B 0D 
-		 23 0A B5 5B 
-		 CE 6E 14 FE 
-		 9A 37 3D 44 
-		 6E 33 00 00 
-		 84 46 E4 2B 
-		 FD 26 00 00 
+		 D1 83 0A 7C 
+		 27 80 49 75 
+		 4F 83 B1 59 
+		 16 81 1A 8D 
+		 76 82 C6 93 
+		 A2 B5 7B C1 
+		 56 17 F1 83 
+		 A9 7C 80 80 
+		 CB 75 4D 83 
+		 F8 70 5D 59 
+		 87 7E 58 82 
+		 7B 99 CB BC 
+		 A8 C9 59 0D 
+		 2C 0B CD 5A 
+		 CE 6E ED FD 
+		 87 3D B7 44 
+		 CA 41 00 00 
+		 B9 4C A9 33 
+		 27 40 00 00 
 		 00 00 00 00 
 		 00 00 00 00 
-		 18 70 92 6A 
-		 76 6D BC 7B 
-		 87 75 3D 68 
-		 09 6D 45 7B 
-		 F2 74 B1 63 
-		 4B 74 3C AB 
-		 1D 9E 62 61 
+		 51 70 A2 6A 
+		 6B 5D 9D 81 
+		 2B 75 B4 68 
+		 32 57 FB 7B 
+		 37 74 AF 62 
+		 49 84 71 B1 
+		 17 A0 62 17 
 		 64 A0 71 0C 
 		 28 00 FF 36 
 		 F0 11 30 03 
 		 00 00 00 0C 
 	];
 };
+
