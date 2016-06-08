@@ -233,6 +233,9 @@ static const char fsg_string_interface[] = "Mass Storage";
 #include "storage_common.h"
 #include "f_mass_storage.h"
 
+#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
+#include <linux/usb/usb_custom_cfg.h>//TQY add
+#endif
 /* Static strings, in UTF-8 (for simplicity we use only ASCII characters) */
 static struct usb_string		fsg_strings[] = {
 	{FSG_STRING_INTERFACE,		fsg_string_interface},
