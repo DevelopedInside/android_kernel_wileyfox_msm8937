@@ -38,6 +38,11 @@
 #include "mstar_drv_hotknot.h"
 #endif //CONFIG_ENABLE_HOTKNOT
 
+#ifdef CONFIG_HY_DRV_ASSIST
+#include <linux/hy-assist.h>
+#endif
+
+
 /*=============================================================*/
 // EXTERN VARIABLE DECLARATION
 /*=============================================================*/
@@ -461,6 +466,30 @@ void MsDrvInterfaceTouchDeviceResume(struct early_suspend *pSuspend)
 #endif //CONFIG_ENABLE_NOTIFIER_FB
 bool is_msg28xx = false;
 /* probe function is used for matching and initializing input device */
+
+#ifdef CONFIG_HY_DRV_ASSIST
+static ssize_t msg2xxx_ic_show(struct device *dev,struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%s\n","Mstar.msg2xxx");
+}
+static ssize_t msg2xxx_fw_ver_show(struct device *dev,struct device_attribute *attr, char *buf)
+{
+	u16 cur_major = 0, cur_minor = 0;
+	u8 *_gFwVersion = NULL;
+	DrvIcFwLyrGetCustomerFirmwareVersion(&cur_major, &cur_minor, &_gFwVersion);
+	printk(KERN_ERR"%s major,minor(%x,%x) %s\n",__func__,cur_major,cur_minor,_gFwVersion);
+	return sprintf(buf, "%d.%d\n", cur_major,cur_minor);
+}
+static ssize_t msg2xxx_tp_vendor_show(struct device *dev,struct device_attribute *attr, char *buf)
+{
+	u16 cur_major = 0, cur_minor = 0;
+	u8 *_gFwVersion = NULL;
+	DrvIcFwLyrGetCustomerFirmwareVersion(&cur_major, &cur_minor, &_gFwVersion);
+	printk(KERN_ERR"%s major,minor(%d,%d)\n",__func__,cur_major,cur_minor);
+	return sprintf(buf, "%d\n", cur_major);
+}
+#endif
+
 s32 /*__devinit*/ MsDrvInterfaceTouchDeviceProbe(struct i2c_client *pClient, const struct i2c_device_id *pDeviceId)
 {
     s32 nRetVal = 0;
@@ -505,6 +534,11 @@ s32 /*__devinit*/ MsDrvInterfaceTouchDeviceProbe(struct i2c_client *pClient, con
     g_EsdCheckWorkqueue = create_workqueue("esd_check");
     queue_delayed_work(g_EsdCheckWorkqueue, &g_EsdCheckWork, ESD_PROTECT_CHECK_PERIOD);
 #endif //CONFIG_ENABLE_ESD_PROTECTION
+#ifdef CONFIG_HY_DRV_ASSIST
+	ctp_assist_register_attr("ic",&msg2xxx_ic_show,NULL);
+	ctp_assist_register_attr("fw_ver",&msg2xxx_fw_ver_show,NULL);
+	ctp_assist_register_attr("tp_vendor",&msg2xxx_tp_vendor_show,NULL);
+#endif
 
     DBG(&g_I2cClient->dev, "*** MStar touch driver registered ***\n");
     

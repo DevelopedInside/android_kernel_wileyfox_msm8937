@@ -581,6 +581,12 @@ config QPNP_MISC
 	  and the driver provides an API to check if this interrupt
 	  is available on the current PMIC chip.
 
+config HY_DRV_ASSIST
+	bool "hymost drivers assist"
+	default y
+	help
+	  hymost. help get information of different device with the same path
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
