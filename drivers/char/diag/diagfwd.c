@@ -982,18 +982,6 @@ int diag_process_apps_pkt(unsigned char *buf, int len,
 		/* Not required, represents that command isnt sent to modem */
 		return 0;
 	}
-	else if (/*(cpu_is_msm8x60() || chk_apps_master()) &&*/ (*buf == 0x29) && (*(buf+1) == 0x2)) {//TQY
-		/* send response back */
-		driver->apps_rsp_buf[0] = *buf;
-		msleep(5000);
-		/* call download API */
-		msm_set_restart_mode(RESTART_NORMAL);
-		printk(KERN_CRIT "diag: download mode set, Rebooting SoC..\n");
-		kernel_restart(NULL);
-		/* Not required, represents that command isnt sent to modem */
-		return 0;
-
-	}
 	/* Check for polling for Apps only DIAG */
 	else if ((*buf == 0x4b) && (*(buf+1) == 0x32) &&
 		(*(buf+2) == 0x03)) {
