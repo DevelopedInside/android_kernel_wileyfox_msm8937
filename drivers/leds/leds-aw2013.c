@@ -252,7 +252,7 @@ static void aw2013_brightness_work(struct work_struct *work)
 static void aw2013_led_blink_set(struct aw2013_led *led, unsigned long blinking)
 {
 	u8 val;
-
+	printk(KERN_ERR"%s blink=%ld\n",__func__,blinking);
 	/* enable regulators if they are disabled */
 	if (!led->pdata->led->poweron) {
 		if (aw2013_power_on(led->pdata->led, true)) {
