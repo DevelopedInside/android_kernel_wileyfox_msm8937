@@ -290,7 +290,7 @@
  * The below compile option is used to enable glove mode and only supports MSG28XX.
  * By default, this compile option is disabled.
  */
-//#define CONFIG_ENABLE_GLOVE_MODE
+#define CONFIG_ENABLE_GLOVE_MODE
 
 
 /*
