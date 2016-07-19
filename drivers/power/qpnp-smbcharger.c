@@ -8735,6 +8735,7 @@ static int smbchg_probe(struct spmi_device *spmi)
 			chip->revision[ANA_MAJOR], chip->revision[ANA_MINOR],
 			get_prop_batt_present(chip),
 			chip->dc_present, chip->usb_present);
+	smbchg_charging_en(chip,true);//TQY
 	return 0;
 
 unregister_led_class:
