@@ -166,10 +166,7 @@ static ssize_t nfc_read(struct file *filp, char __user *buf,
 			ret = -EAGAIN;
 			goto err;
 		}
-		if (!nqx_dev->irq_enabled) {
-			enable_irq(nqx_dev->client->irq);
-			nqx_dev->irq_enabled = true;
-		}
+		nqx_enable_irq(nqx_dev);
 		ret = wait_event_interruptible(nqx_dev->read_wq,
 				gpio_get_value(nqx_dev->irq_gpio));
 		if (ret)
