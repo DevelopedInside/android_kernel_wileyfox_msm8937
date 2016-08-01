@@ -24,6 +24,19 @@
 };
 
 &usb_otg {
+
+	/delete-property/ clocks;
+	clocks = <&clock_gcc clk_gcc_usb_hs_ahb_clk>,
+			 <&clock_gcc clk_gcc_usb_hs_system_clk>,
+			 <&clock_gcc clk_gcc_usb2a_phy_sleep_clk>,
+			 <&clock_gcc clk_bimc_usb_clk>,
+			 <&clock_gcc clk_snoc_usb_clk>,
+			 <&clock_gcc clk_pnoc_usb_clk>,
+			 <&clock_gcc clk_gcc_qusb2_phy_clk>,
+			 <&clock_gcc clk_gcc_usb2_hs_phy_only_clk>,
+			 <&clock_gcc clk_gcc_usb_hs_phy_cfg_ahb_clk>,
+			 <&clock_gcc clk_xo_otg_clk>;
+
 	qcom,usbbam@78c4000 {
 		qcom,enable-hsusb-bam-on-boot;
 
@@ -192,6 +205,10 @@
 		qcom,ipa-loaduC;
 		qcom,ipa-advertise-sg-support;
 	};
+
+	qcom,rmtfs_sharedmem@00000000 {
+		reg = <0x00000000 0x00180000>;
+	};
 };
 
 &apc_vreg_corner {
@@ -199,6 +216,10 @@
 	/delete-property/ qcom,cpr-quotient-adjustment;
 	/delete-property/ qcom,cpr-init-voltage-adjustment;
 	/delete-property/ qcom,cpr-enable;
+
+	qcom,cpr-quotient-adjustment =
+		<(0)    (28)   (28)>;
+	qcom,cpr-enable;
 };
 
 &modem_mem {
@@ -216,7 +237,6 @@
 /* MSS_SCL */
 &modem_etm0 {
 	coresight-child-ports = <2>;
-	qcom,inst-id = <11>;
 };
 
 &soc {
@@ -245,15 +265,44 @@
 		coresight-child-list = <&funnel_right>;
 		coresight-child-ports = <1>;
 
-		qcom,inst-id = <2>;
+		qcom,inst-id = <11>;
+	};
+};
+
+&mdss_mdp {
+	qcom,vbif-settings = <0x0d0 0x00000020>;
+};
+
+&bam_dmux {
+	status = "disabled";
+};
+
+&pil_mss {
+	/delete-property/ qcom,qdsp6v56-1-8-inrush-current;
+	qcom,qdsp6v56-1-8;
+};
+
+/* CAMSS_CPHY */
+&soc {
+	qcom,csiphy@1b34000 {
+		status = "ok";
+		compatible = "qcom,csiphy-v3.4.2.1", "qcom,csiphy";
+	};
+
+	qcom,csiphy@1b35000 {
+		status = "ok";
+		compatible = "qcom,csiphy-v3.4.2.1", "qcom,csiphy";
 	};
 };
 
 /* GPU overrides */
 &msm_gpu {
 
-	/delete-node/qcom,gpu-pwrlevels;
+	/delete-property/qcom,initial-pwrlevel;
+	qcom,initial-pwrlevel = <3>;
 
+	/delete-node/qcom,gpu-pwrlevel-bins;
+	/delete-node/qcom,gpu-pwrlevels;
 	/* Power levels */
 	qcom,gpu-pwrlevels {
 		#address-cells = <1>;
@@ -264,7 +313,7 @@
 		/* SUPER TURBO */
 		qcom,gpu-pwrlevel@0 {
 			reg = <0>;
-			qcom,gpu-freq = <450000000>;
+			qcom,gpu-freq = <475000000>;
 			qcom,bus-freq = <10>;
 			qcom,bus-min = <10>;
 			qcom,bus-max = <10>;

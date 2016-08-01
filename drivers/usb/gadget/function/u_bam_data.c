@@ -937,7 +937,7 @@ static void bam2bam_data_connect_work(struct work_struct *w)
 			| MSM_PRODUCER | d->src_pipe_idx;
 		d->rx_req->length = 32*1024;
 		d->rx_req->udc_priv = sps_params;
-		msm_ep_config(port->port_usb->out, d->rx_req, GFP_ATOMIC);
+		msm_ep_config(port->port_usb->out, d->rx_req);
 
 		/* Configure TX */
 		configure_usb_data_fifo(d->usb_bam_type,
@@ -947,15 +947,23 @@ static void bam2bam_data_connect_work(struct work_struct *w)
 					| d->dst_pipe_idx;
 		d->tx_req->length = 32*1024;
 		d->tx_req->udc_priv = sps_params;
-		msm_ep_config(port->port_usb->in, d->tx_req, GFP_ATOMIC);
+		msm_ep_config(port->port_usb->in, d->tx_req);
 
 	} else {
 		/* Configure RX */
+		get_bam2bam_connection_info(d->usb_bam_type,
+				d->src_connection_idx,
+				&d->src_pipe_idx,
+				NULL, NULL, NULL);
 		sps_params = (SPS_PARAMS_SPS_MODE | d->src_pipe_idx |
 			MSM_VENDOR_ID) & ~SPS_PARAMS_TBE;
 		d->rx_req->udc_priv = sps_params;
 
 		/* Configure TX */
+		get_bam2bam_connection_info(d->usb_bam_type,
+				d->dst_connection_idx,
+				&d->dst_pipe_idx,
+				NULL, NULL, NULL);
 		sps_params = (SPS_PARAMS_SPS_MODE | d->dst_pipe_idx |
 			MSM_VENDOR_ID) & ~SPS_PARAMS_TBE;
 		d->tx_req->udc_priv = sps_params;
@@ -1288,6 +1296,7 @@ void u_bam_data_stop_rndis_ipa(void)
 	int port_num;
 	struct bam_data_port *port;
 	struct bam_data_ch_info *d;
+	unsigned long flags;
 
 	pr_debug("%s\n", __func__);
 
@@ -1305,6 +1314,15 @@ void u_bam_data_stop_rndis_ipa(void)
 		rndis_ipa_reset_trigger();
 		bam_data_stop_endless_tx(port);
 		bam_data_stop_endless_rx(port);
+		if (gadget_is_dwc3(port->gadget)) {
+			spin_lock_irqsave(&port->port_lock, flags);
+			/* check if USB cable is disconnected or not */
+			if (port->port_usb) {
+				msm_ep_unconfig(port->port_usb->in);
+				msm_ep_unconfig(port->port_usb->out);
+			}
+			spin_unlock_irqrestore(&port->port_lock, flags);
+		}
 		queue_work(bam_data_wq, &port->disconnect_w);
 	}
 }
