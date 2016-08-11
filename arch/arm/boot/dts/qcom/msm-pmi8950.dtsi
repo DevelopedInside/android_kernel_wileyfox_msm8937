@@ -326,9 +326,8 @@
 			qcom,capacity-learning-on;
 
 			qcom,warm-bat-decidegc=<450>;
-			qcom,cool-bat-decidegc=<150>;
 			qcom,hot-bat-decidegc=<550>;
-			qcom,cold-bat-decidegc=<50>;
+			qcom,cold-bat-decidegc=<(-40)>;
 			qcom,thermal-coefficients=[C8 86 C1 50 D3 37];
 
 			qcom,fg-soc@4000 {
