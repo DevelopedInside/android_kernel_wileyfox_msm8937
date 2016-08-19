@@ -470,7 +470,7 @@ bool is_msg28xx = false;
 #ifdef CONFIG_HY_DRV_ASSIST
 static ssize_t msg2xxx_ic_show(struct device *dev,struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%s\n","Mstar.msg2xxx");
+	return sprintf(buf, "%s\n","Mstar.MSG5846");
 }
 static ssize_t msg2xxx_fw_ver_show(struct device *dev,struct device_attribute *attr, char *buf)
 {
