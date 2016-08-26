@@ -86,6 +86,16 @@ extern struct delayed_work g_EsdCheckWork;
 extern struct workqueue_struct *g_EsdCheckWorkqueue;
 #endif //CONFIG_ENABLE_ESD_PROTECTION
 
+#ifdef CONFIG_ENABLE_NOTIFIER_FB
+struct work_struct g_FbNotifierWork;
+struct workqueue_struct *g_FbNotifierWorkqueue;
+struct fb_notifier_event_data {
+    unsigned long nEvent;
+    int pBlank;
+};
+struct fb_notifier_event_data g_FbNotifierEventData;
+#endif
+
 extern u8 IS_FIRMWARE_DATA_LOG_ENABLED;
 
  extern struct pinctrl *_gTsPinCtrl;
@@ -114,14 +124,24 @@ static u8 _gAMStartCmd[4] = {HOTKNOT_SEND, ADAPTIVEMOD_BEGIN, 0, 0};
 int MsDrvInterfaceTouchDeviceFbNotifierCallback(struct notifier_block *pSelf, unsigned long nEvent, void *pData)
 {
     struct fb_event *pEventData = pData;
-    int *pBlank;
-	PRINTF_ERR("MsDrvInterfaceTouchDeviceFbNotifierCallback");
-	
-    if (pEventData && pEventData->data && nEvent == FB_EVENT_BLANK)
-    {
-        pBlank = pEventData->data;
+    if (pEventData && pEventData->data && nEvent == FB_EVENT_BLANK) {
+        flush_workqueue(g_FbNotifierWorkqueue);
 
-        if (*pBlank == FB_BLANK_UNBLANK)
+        g_FbNotifierEventData.nEvent = nEvent;
+        g_FbNotifierEventData.pBlank = *((int*)pEventData->data);
+        queue_work(g_FbNotifierWorkqueue, &g_FbNotifierWork);
+    }
+    return 0;
+}
+static void DrvPlatformProcessFbNotification(struct work_struct *work) {
+    int nEvent, pBlank;
+
+    nEvent = g_FbNotifierEventData.nEvent;
+    pBlank = g_FbNotifierEventData.pBlank;
+    PRINTF_ERR("MsDrvInterfaceTouchDeviceFbNotifierCallback");
+	
+    {
+        if (pBlank == FB_BLANK_UNBLANK)
         {
             DBG(&g_I2cClient->dev, "*** %s() TP Resume ***\n", __func__);
             PRINTF_ERR(" TP Resume ");
@@ -129,14 +149,14 @@ int MsDrvInterfaceTouchDeviceFbNotifierCallback(struct notifier_block *pSelf, un
             if (g_IsUpdateFirmware != 0) // Check whether update frimware is finished
             {
                 DBG(&g_I2cClient->dev, "Not allow to power on/off touch ic while update firmware.\n");
-                return 0;
+                return;
             }
 
 #ifdef CONFIG_ENABLE_PROXIMITY_DETECTION
             if (g_EnableTpProximity == 1)
             {
                 DBG(&g_I2cClient->dev, "g_EnableTpProximity = %d\n", g_EnableTpProximity);
-                return 0;
+                return;
             }
 #endif //CONFIG_ENABLE_PROXIMITY_DETECTION
             
@@ -223,7 +243,7 @@ int MsDrvInterfaceTouchDeviceFbNotifierCallback(struct notifier_block *pSelf, un
             queue_delayed_work(g_EsdCheckWorkqueue, &g_EsdCheckWork, ESD_PROTECT_CHECK_PERIOD);
 #endif //CONFIG_ENABLE_ESD_PROTECTION
         }
-        else if (*pBlank == FB_BLANK_POWERDOWN)
+        else if (pBlank == FB_BLANK_POWERDOWN)
         {
             DBG(&g_I2cClient->dev, "*** %s() TP Suspend ***\n", __func__);
             PRINTF_ERR(" TP suspend\n ");
@@ -237,14 +257,14 @@ int MsDrvInterfaceTouchDeviceFbNotifierCallback(struct notifier_block *pSelf, un
             if (g_IsUpdateFirmware != 0) // Check whether update frimware is finished
             {
                 DBG(&g_I2cClient->dev, "Not allow to power on/off touch ic while update firmware.\n");
-                return 0;
+                return;
             }
 
 #ifdef CONFIG_ENABLE_PROXIMITY_DETECTION
             if (g_EnableTpProximity == 1)
             {
                 DBG(&g_I2cClient->dev, "g_EnableTpProximity = %d\n", g_EnableTpProximity);
-                return 0;
+                return;
             }
 #endif //CONFIG_ENABLE_PROXIMITY_DETECTION
 
@@ -256,7 +276,7 @@ int MsDrvInterfaceTouchDeviceFbNotifierCallback(struct notifier_block *pSelf, un
                 if (g_GestureWakeupMode[0] != 0x00000000 || g_GestureWakeupMode[1] != 0x00000000)
                 {
                     DrvIcFwLyrOpenGestureWakeup(&g_GestureWakeupMode[0]);
-                    return 0;
+                    return;
                 }
             }
 #endif //CONFIG_ENABLE_GESTURE_WAKEUP
@@ -285,7 +305,7 @@ int MsDrvInterfaceTouchDeviceFbNotifierCallback(struct notifier_block *pSelf, un
         }
     }
 
-    return 0;
+    return;
 }
 
 #else
@@ -534,6 +554,10 @@ s32 /*__devinit*/ MsDrvInterfaceTouchDeviceProbe(struct i2c_client *pClient, con
     g_EsdCheckWorkqueue = create_workqueue("esd_check");
     queue_delayed_work(g_EsdCheckWorkqueue, &g_EsdCheckWork, ESD_PROTECT_CHECK_PERIOD);
 #endif //CONFIG_ENABLE_ESD_PROTECTION
+#ifdef CONFIG_ENABLE_NOTIFIER_FB
+    g_FbNotifierWorkqueue = create_singlethread_workqueue("fb_notification");
+    INIT_WORK(&g_FbNotifierWork, DrvPlatformProcessFbNotification);
+#endif
 #ifdef CONFIG_HY_DRV_ASSIST
 	ctp_assist_register_attr("ic",&msg2xxx_ic_show,NULL);
 	ctp_assist_register_attr("fw_ver",&msg2xxx_fw_ver_show,NULL);
