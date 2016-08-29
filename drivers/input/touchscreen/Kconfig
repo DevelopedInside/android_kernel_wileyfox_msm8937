@@ -559,6 +559,14 @@ config TOUCHSCREEN_MSTAR
 
 source "drivers/input/touchscreen/mstar_drv_new/Kconfig"
 
+config TOUCHSCREEN_ILITEK_2120
+        bool "Ilitek touchpanel series"
+        depends on I2C
+        help
+          Say Y here if you have a Ilitek touchscreen.
+
+source "drivers/input/touchscreen/ilitek_2120/Kconfig"
+
 config TOUCHSCREEN_MIGOR
 	tristate "Renesas MIGO-R touchscreen"
 	depends on SH_MIGOR && I2C
