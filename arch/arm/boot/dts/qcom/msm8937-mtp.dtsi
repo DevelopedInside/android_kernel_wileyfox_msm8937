@@ -147,6 +147,17 @@
 			aw2013,off-time-ms = <4>;
 		};
 	};
+	/* Parallel-charger configuration */
+	smb135x-charger@1c {
+		compatible = "qcom,smb1358-charger";
+		reg = <0x1c>;
+		qcom,parallel-en-pin-polarity = <1>;
+		qcom,fastchg-ma = <2500>;
+		qcom,parallel-charger;
+		qcom,float-voltage-mv = <4350>;
+		qcom,recharge-mv = <100>;
+		qcom,thermal-mitigation = <1500 700 600 0>;
+	};
 };
 
 &i2c_3 { /* BLSP2 QUP3 */

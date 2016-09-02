@@ -111,6 +111,7 @@
 #define BATT_MISSING_THERM_BIT		BIT(1)
 
 #define CFG_1A_REG			0x1A
+#define TEMP_MONITOR_EN_BIT     BIT(6) 
 #define HOT_SOFT_VFLOAT_COMP_EN_BIT	BIT(3)
 #define COLD_SOFT_VFLOAT_COMP_EN_BIT	BIT(2)
 #define HOT_SOFT_CURRENT_COMP_EN_BIT	BIT(1)
@@ -1339,7 +1340,7 @@ static int smb135x_set_appropriate_current(struct smb135x_chg *chip,
 static int smb135x_charging_enable(struct smb135x_chg *chip, int enable)
 {
 	int rc;
-
+	smb135x_masked_write(chip, CFG_1A_REG,TEMP_MONITOR_EN_BIT,0);
 	rc = smb135x_masked_write(chip, CMD_CHG_REG,
 				CMD_CHG_EN, enable ? CMD_CHG_EN : 0);
 	if (rc < 0) {
