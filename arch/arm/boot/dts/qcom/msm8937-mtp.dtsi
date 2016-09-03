@@ -119,6 +119,10 @@
 };
 
 &i2c_2 { /* BLSP1 QUP1 */
+	aw87319_pa:@58 {
+		compatible = "awinic,aw87319_pa";
+		reg = <0x58>;
+	};
 	aw2013@45 {
 		compatible = "awinic,aw2013";
 		reg = <0x45>;
