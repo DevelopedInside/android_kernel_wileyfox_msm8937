@@ -52,7 +52,9 @@
 #define MAX_WSA_CODEC_NAME_LENGTH 80
 #define MSM_DT_MAX_PROP_SIZE 80
 
+#ifdef CONFIG_AUDIO_PA_87319
 extern unsigned char AW87319_Audio_Speaker(void);
+#endif
 enum btsco_rates {
 	RATE_8KHZ_ID,
 	RATE_16KHZ_ID,
@@ -272,12 +274,20 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 	pr_debug("%s: %s external speaker PA\n", __func__,
 		enable ? "Enable" : "Disable");
 
+	#ifdef CONFIG_AUDIO_PA_87319
 	if (enable) {
 		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
 		AW87319_Audio_Speaker();
 	} else {
 		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
 	}
+	#else
+	  if (enable) {
+                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
+        } else {
+                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
+        }
+	#endif
 	return 0;
 }
 
