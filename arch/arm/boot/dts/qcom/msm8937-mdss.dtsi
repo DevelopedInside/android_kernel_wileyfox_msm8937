@@ -62,19 +62,19 @@
 		qcom,mdss-pipe-vig-off = <0x00005000>;
 		qcom,mdss-pipe-rgb-off = <0x00015000 0x00017000>;
 		qcom,mdss-pipe-dma-off = <0x00025000>;
-		qcom,mdss-pipe-cursor-off = <0x00035000>;
+		/*qcom,mdss-pipe-cursor-off = <0x00035000>;*/
 
 		qcom,mdss-pipe-vig-xin-id = <0>;
 		qcom,mdss-pipe-rgb-xin-id = <1 5>;
 		qcom,mdss-pipe-dma-xin-id = <2>;
-		qcom,mdss-pipe-cursor-xin-id = <7>;
+		/*qcom,mdss-pipe-cursor-xin-id = <7>;*/
 
 		/* Offsets relative to "mdp_phys + mdp-reg-offset" address */
 		qcom,mdss-pipe-vig-clk-ctrl-offsets = <0x2AC 0 0>;
 		qcom,mdss-pipe-rgb-clk-ctrl-offsets = <0x2AC 4 8>,
 						      <0x2B4 4 8>;
 		qcom,mdss-pipe-dma-clk-ctrl-offsets = <0x2AC 8 12>;
-		qcom,mdss-pipe-cursor-clk-ctrl-offsets = <0x3A8 16 15>;
+		/*qcom,mdss-pipe-cursor-clk-ctrl-offsets = <0x3A8 16 15>;*/
 
 
 		qcom,mdss-ctl-off = <0x00002000 0x00002200 0x00002400>;
