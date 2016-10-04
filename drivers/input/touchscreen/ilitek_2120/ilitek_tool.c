@@ -1,4 +1,9 @@
 #include "ilitek_ts.h"
+
+#ifdef DEBUG_NETLINK
+extern bool debug_flag;
+#endif
+
 #ifdef TOOL
 	// device data
 	struct dev_data {
@@ -61,6 +66,10 @@
 #define ILITEK_IOCTL_I2C_UPDATE_FW				_IOWR(ILITEK_IOCTL_BASE, 18, int)
 #define ILITEK_IOCTL_RESET						_IOWR(ILITEK_IOCTL_BASE, 19, int)
 #define ILITEK_IOCTL_INT_STATUS						_IOWR(ILITEK_IOCTL_BASE, 20, int)
+
+#ifdef DEBUG_NETLINK
+#define ILITEK_IOCTL_DEBUG_SWITCH						_IOWR(ILITEK_IOCTL_BASE, 22, int)
+#endif
 
 #ifdef GESTURE
 #define ILITEK_IOCTL_I2C_GESTURE_FLAG			_IOWR(ILITEK_IOCTL_BASE, 26, int)
@@ -211,6 +220,21 @@ static ssize_t ilitek_file_write(struct file *filp, const char *buf, size_t coun
 		DBG_FLAG=!DBG_FLAG;
 		printk("%s, %s DBG message(%X).\n",__func__,DBG_FLAG?"Enabled":"Disabled",DBG_FLAG);
 	}
+	#ifdef DEBUG_NETLINK
+	else if(strcmp(buffer, "dbg_flag") == 0){
+		debug_flag =!debug_flag;
+		printk("%s, %s debug_flag message(%X).\n",__func__,debug_flag?"Enabled":"Disabled",debug_flag);
+	}
+	else if(strcmp(buffer, "enable") == 0){
+		enable_irq(i2c.client->irq);
+		printk("%s, %s enable_irq(i2c.client->irq)DBG message(%X).\n",__func__,DBG_FLAG?"Enabled":"Disabled",DBG_FLAG);
+	}else if(strcmp(buffer, "disable") == 0){
+		disable_irq(i2c.client->irq);
+		printk("%s, %s disable_irq(i2c.client->irq) DBG message(%X).\n",__func__,DBG_FLAG?"Enabled":"Disabled",DBG_FLAG);
+	}else if(strcmp(buffer, "irq_status") == 0){
+		printk("%s, gpio_get_value(i2c.irq_gpio) = %d.\n",__func__, gpio_get_value(i2c.irq_gpio));
+	}
+	#endif
 #ifdef GESTURE
 	else if(strcmp(buffer, "gesture") == 0){
 		ilitek_system_resume =!ilitek_system_resume;
@@ -378,6 +402,20 @@ static int  ilitek_file_ioctl(struct inode *inode, struct file *filp, unsigned i
 				}
 			}
 			break;
+		#ifdef DEBUG_NETLINK
+		case ILITEK_IOCTL_DEBUG_SWITCH:
+			ret = copy_from_user(buffer, (unsigned char*)arg, 1);
+			printk("ilitek The debug_flag = %d.\n", buffer[0]);
+			if (buffer[0] == 0)
+			{
+				debug_flag = false;
+			}
+			else if (buffer[0] == 1)
+			{
+				debug_flag = true;
+			}
+			break;
+		#endif
 		case ILITEK_IOCTL_UPDATE_FLAG:
 			update_timeout = 1;
 			update_Flag = arg;

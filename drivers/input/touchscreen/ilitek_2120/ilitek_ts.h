@@ -1,3 +1,19 @@
+#define DEBUG_NETLINK
+#ifdef DEBUG_NETLINK
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <net/sock.h>
+#include <net/netlink.h>
+#include <linux/skbuff.h>
+#include <linux/netlink.h>
+#include <net/sock.h>
+#include <linux/netfilter.h>
+#include <linux/netfilter_ipv4.h>
+#include <linux/ip.h>
+#include <linux/tcp.h>
+#include <linux/icmp.h>
+#include <linux/udp.h>
+#endif
 #include <linux/module.h>
 #include <linux/input.h>
 #include <linux/input/mt.h>
@@ -41,14 +57,14 @@
 #define TOUCH_PROTOCOL_B
 #define TOOL
 
-//#define ILI_UPDATE_FW
+#define ILI_UPDATE_FW
 
 //#define ILITEK_ESD_CHECK 
 
 #define GESTURE_2120		1
 #define GESTURE_DRIVER		2
 #if IC2120
-//#define GESTURE				GESTURE_2120
+#define GESTURE				GESTURE_2120
 #endif
 
 #if !IC2120

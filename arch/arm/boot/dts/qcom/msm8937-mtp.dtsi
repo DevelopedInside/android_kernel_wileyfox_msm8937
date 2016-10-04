@@ -328,7 +328,7 @@
 //	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
 };
 
-&dsi_jdi_1080p_hsd_helitai_video {
+&dsi_novatek_1080p_jdi_helitai_video {
 	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
 };
 

@@ -282,10 +282,17 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
 	}
 	#else
+	gpio_direction_output(pdata->spk_ext_pa_gpio,1);
 	  if (enable) {
-                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
+                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 1);
+		usleep_range(2,2);
+		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 0);
+                usleep_range(2,2);
+		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 1);
+                usleep_range(10,10);
         } else {
-                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
+                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 0);
+		usleep_range(10,10);
         }
 	#endif
 	return 0;

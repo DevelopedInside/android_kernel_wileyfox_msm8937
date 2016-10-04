@@ -2,6 +2,10 @@
 #include <linux/firmware.h>
 #include <linux/vmalloc.h>
 
+#ifdef CONFIG_HY_DRV_ASSIST
+#include <linux/hy-assist.h>
+#endif
+
 #if !IC2120
 static bool serial23 = false;
 #endif
@@ -16,6 +20,13 @@ int gesture_count,getstatus;
 	static DECLARE_WAIT_QUEUE_HEAD(waiter);
 	static int tpd_flag = 0;
 #endif
+#endif
+
+#ifdef DEBUG_NETLINK
+bool debug_flag = false;
+struct sock *netlink_sock;
+static kuid_t	uid;
+static int pid = 100, seq = 23/*, sid*/;
 #endif
 
 #ifdef ILI_UPDATE_FW
@@ -151,6 +162,84 @@ static struct i2c_driver ilitek_ts_driver = {
 	},
 	.id_table = ilitek_i2c_id,
 };
+
+#ifdef CONFIG_HY_DRV_ASSIST
+static ssize_t ilitek_ic_show(struct device *dev,struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%s\n","Ilitek.ili2120");
+}
+static ssize_t ilitek_fw_ver_show(struct device *dev,struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d.%d.%d.%d\n", i2c.firmware_ver[0],i2c.firmware_ver[1],i2c.firmware_ver[2],i2c.firmware_ver[3]);
+}
+static ssize_t ilitek_tp_vendor_show(struct device *dev,struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d.%d.%d.%d\n", i2c.firmware_ver[0],i2c.firmware_ver[1],i2c.firmware_ver[2],i2c.firmware_ver[3]);
+}
+#endif
+
+
+#ifdef DEBUG_NETLINK
+//bool debug_flag = false;
+//static struct sock *netlink_sock;
+
+static void udp_reply(int pid,int seq,void *payload,int size)
+{
+	struct sk_buff	*skb;
+	struct nlmsghdr	*nlh;
+	int		len = NLMSG_SPACE(size);
+	void		*data;
+	int ret;
+	skb = alloc_skb(len, GFP_ATOMIC);
+	if (!skb)
+		return;
+	printk("ilitek udp_reply\n");
+	nlh= nlmsg_put(skb, pid, seq, 0, size, 0);
+	nlh->nlmsg_flags = 0;
+	data=NLMSG_DATA(nlh);
+	memcpy(data, payload, size);
+	NETLINK_CB(skb).portid = 0;         /* from kernel */
+	NETLINK_CB(skb).dst_group = 0;  /* unicast */
+	ret=netlink_unicast(netlink_sock, skb, pid, MSG_DONTWAIT);
+	if (ret <0)
+	{
+		printk("ilitek send failed\n");
+		return;
+	}
+	return;
+
+}
+
+/* Receive messages from netlink socket. */
+
+static void udp_receive(struct sk_buff  *skb)
+{
+	void			*data;
+	uint8_t buf[64] = {0};
+	struct nlmsghdr *nlh;
+
+	nlh = (struct nlmsghdr *)skb->data;
+	pid  = 100;//NETLINK_CREDS(skb)->pid;
+	uid  = NETLINK_CREDS(skb)->uid;
+	//sid  = NETLINK_CB(skb).sid;
+	seq  = 23;//nlh->nlmsg_seq;
+	data = NLMSG_DATA(nlh);
+	//printk("recv skb from user space uid:%d pid:%d seq:%d,sid:%d\n",uid,pid,seq,sid);
+	if(!strcmp(data,"Hello World!"))
+	{
+		printk("recv skb from user space pid:%d seq:%d\n",pid,seq);
+		printk("data is :%s\n",(char *)data);
+		udp_reply(pid,seq,data,sizeof("Hello World!"));
+		//udp_reply(pid,seq,data);
+	}
+	else
+	{
+		memcpy(buf,data,64);
+	}
+	//kfree(data);
+	return ;
+}
+#endif
 
 void ilitek_reset(int reset_gpio)
 {
@@ -873,6 +962,14 @@ static int ilitek_report_data_2120_new(void) {
 #endif
 	buf[0] = ILITEK_TP_CMD_READ_DATA;
 	ret = ilitek_i2c_write_and_read(i2c.client, buf, 1, 0, buf, 53);
+#ifdef DEBUG_NETLINK
+	if (debug_flag) {
+		udp_reply(pid,seq,buf,sizeof(buf));
+	}
+	if (buf[1] == 0x5F) {
+		return 0;
+	}
+#endif
 	//printk("ilitek start\n");
 	len = buf[0];
 	
@@ -885,7 +982,7 @@ static int ilitek_report_data_2120_new(void) {
 		ret = 0;
 	}
 	len = buf[0];
-	DBG("ilitek len = 0x%x buf[0] = 0x%x, buf[1] = 0x%x, buf[2] = 0x%x\n", len, buf[0], buf[1], buf[2]);
+	printk("ilitek len = 0x%x buf[0] = 0x%x, buf[1] = 0x%x, buf[2] = 0x%x\n", len, buf[0], buf[1], buf[2]);
 	if (len > 20) {
 		printk("ilitek len > 20  return & release\n");
 				ilitek_touch_release_all_point(1);
@@ -894,7 +991,7 @@ static int ilitek_report_data_2120_new(void) {
 #ifdef GESTURE
 #if GESTURE == GESTURE_2120
 	if (ilitek_system_resume == 0) {
-		DBG("ilitek gesture wake up 0x%x, 0x%x, 0x%x\n", buf[0], buf[1], buf[2]);
+		printk("ilitek gesture wake up 0x%x, 0x%x, 0x%x\n", buf[0], buf[1], buf[2]);
 		if (buf[2] == 0x60) {
 			DBG("ilitek gesture wake up this is c\n");
 			input_report_key(i2c.input_dev, KEY_C, 1);
@@ -1901,6 +1998,7 @@ seting_polling_mode:
 int ilitek_i2c_read_tp_info( void)
 {
 	unsigned char buf[64] = {0};
+	int ret=0;
 	int i = 0;
 	#if !IC2120
 	int res_len = 0;
@@ -1908,7 +2006,11 @@ int ilitek_i2c_read_tp_info( void)
 	#if IC2120
 		for (i = 0; i < 20; i++) {
 			buf[0] = 0x10;
-			ilitek_i2c_write_and_read(i2c.client, buf, 1, 10, buf, 3);
+			ret = ilitek_i2c_write_and_read(i2c.client, buf, 1, 10, buf, 3);
+			if(ret<0)
+			{
+			return -1;
+			}
 			printk("ilitek %s, write 0x10 read buf = %X, %X, %X\n", __func__, buf[0], buf[1], buf[2]);
 			if (buf[1] >= 0x80) {
 				printk("FW is ready  ok ok \n");
@@ -2269,6 +2371,7 @@ int ilitek_i2c_suspend(struct i2c_client *client, pm_message_t mesg)
 	}
 #endif
 #endif
+printk("Enter ilitek_i2c_suspend \n");
 #ifdef GESTURE	
 #if GESTURE == GESTURE_2120
 	ilitek_system_resume = 0;
@@ -2346,7 +2449,7 @@ int ilitek_i2c_suspend(struct i2c_client *client, pm_message_t mesg)
  */
 int ilitek_i2c_resume(struct i2c_client *client)
 {
-	DBG("resume Enter\n");
+	printk("ilitek_i2c resume Enter\n");
 #ifdef GESTURE
 	//gesture_flag = 0;
 	ilitek_system_resume = 1;
@@ -2411,6 +2514,13 @@ int ilitek_i2c_resume(struct i2c_client *client)
 static int ilitek_i2c_probe(struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
+#ifdef DEBUG_NETLINK
+	struct netlink_kernel_cfg cfg = {
+		.groups = 0,
+		.input	= udp_receive,
+	};
+#endif
+
 	int ret = 0, tmp = 0;
 	#ifdef ILI_UPDATE_FW
 	#ifdef UPDATE_THREADE
@@ -2733,6 +2843,16 @@ static int ilitek_i2c_probe(struct i2c_client *client,
 #endif 
 
 	ilitek_set_finish_init_flag();
+
+#ifdef CONFIG_HY_DRV_ASSIST
+	ctp_assist_register_attr("ic",&ilitek_ic_show,NULL);
+	ctp_assist_register_attr("fw_ver",&ilitek_fw_ver_show,NULL);
+	ctp_assist_register_attr("tp_vendor",&ilitek_tp_vendor_show,NULL);
+#endif
+
+#ifdef DEBUG_NETLINK
+	netlink_sock = netlink_kernel_create(&init_net,21,&cfg);
+#endif
 	return 0;
 }
 
