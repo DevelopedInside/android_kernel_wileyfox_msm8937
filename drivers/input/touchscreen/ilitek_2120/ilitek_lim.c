@@ -343,7 +343,9 @@ void ilitek_set_finish_init_flag(void)
  */
 static void ilitek_set_input_param(struct input_dev *input,	int max_tp, int max_x, int max_y)
 {
+#if 0
 	int key;
+#endif
 
 	__set_bit(INPUT_PROP_DIRECT, input->propbit);
 	input->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
@@ -370,12 +372,14 @@ static void ilitek_set_input_param(struct input_dev *input,	int max_tp, int max_
 #ifdef REPORT_PRESSURE
 	input_set_abs_params(input, ABS_MT_PRESSURE, 0, 255, 0, 0);
 #endif
+#if 0
 	for(key=0; key<sizeof(touch_key_code) / sizeof(touch_key_code[0]); key++){
 			if(touch_key_code[key] <= 0){
 					continue;
 		}
 			set_bit(touch_key_code[key] & KEY_MAX, input->keybit);
 	}
+#endif
 	input->name = ILITEK_I2C_DRIVER_NAME;
 	input->id.bustype = BUS_I2C;
 	input->dev.parent = &(i2c.client)->dev;
