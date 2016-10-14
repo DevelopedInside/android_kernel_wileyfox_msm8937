@@ -39,6 +39,8 @@
 #endif
 
 //driver information
+//#define VIRTUAL_KEY_PAD
+
 #define DERVER_VERSION_MAJOR 		4
 #define DERVER_VERSION_MINOR 		0
 #define CUSTOMER_ID 				0
@@ -64,7 +66,7 @@
 #define GESTURE_2120		1
 #define GESTURE_DRIVER		2
 #if IC2120
-#define GESTURE				GESTURE_2120
+//#define GESTURE				GESTURE_2120
 #endif
 
 #if !IC2120

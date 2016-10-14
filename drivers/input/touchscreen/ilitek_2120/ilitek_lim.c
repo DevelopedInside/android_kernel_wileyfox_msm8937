@@ -1059,18 +1059,54 @@ static int ilitek_report_data_2120_new(void) {
 		pressure = buf[i * 5 + 7];
 	#endif
 		if (tp_status) {
-			DBG("ilitek TOUCH_POINT  i = %d  \n", i);
+			DBG("ilitek TOUCH_POINT  i = %d x= %d  y=%d  \n", i,x,y);
 			//report to android system
 			//DBG("Point, ID=%02X, X=%04d, Y=%04d,touch_key_hold_press=%d\n",buf[0]  & 0x3F, x,y,touch_key_hold_press);
-			
-		#ifdef REPORT_PRESSURE
-			ilitek_touch_down(i, x, y, 10);
-		#else
-			ilitek_touch_down(i, x, y, 10);
-		#endif
+			printk("i2c.keycount:%d,i2c.keyflag:%d\n",i2c.keycount,i2c.keyflag);
+			#ifdef VIRTUAL_KEY_PAD
+			if(i2c.keyflag == 0){
+				printk("key_x:%d,key_y:%d\n",x,y);
+				if(x ==2250 && y ==2250)
+				{
+					input_report_key(i2c.input_dev, BTN_TOUCH, 1);
+					input_report_key(i2c.input_dev,  KEY_MENU, 1);
+					input_sync(i2c.input_dev);
+					touch_key_hold_press = 1;
+					i2c.keyflag =1;
+					printk("key1\n");
+				}
+				else if(x ==3250 && y ==3250)
+				{
+					input_report_key(i2c.input_dev, BTN_TOUCH, 1);
+					input_report_key(i2c.input_dev,  KEY_HOMEPAGE, 1);
+					input_sync(i2c.input_dev);
+					touch_key_hold_press = 1;
+					i2c.keyflag =1;
+				}
+				else if(x ==4250 && y ==4250)
+				{
+					input_report_key(i2c.input_dev, BTN_TOUCH, 1);
+					input_report_key(i2c.input_dev,  KEY_BACK, 1);
+					input_sync(i2c.input_dev);
+					touch_key_hold_press = 1;
+					i2c.keyflag =1;
+				}
+				else
+				{
+					i2c.keyflag =0;
+				}
+			}
+			#endif
+			if(touch_key_hold_press == 0)
+			{
+			#ifdef REPORT_PRESSURE
+				ilitek_touch_down(i, x, y, 10);
+			#else
+				ilitek_touch_down(i, x, y, 10);
+			#endif
+			}
 			ret = 0;
-		}
-		else {
+		} else {
 			DBG("ilitek RELEASE_POINT  i = %d  \n", i);
 			// release point
 		#ifdef TOUCH_PROTOCOL_B
@@ -1086,7 +1122,12 @@ static int ilitek_report_data_2120_new(void) {
 	}
 	if(len == 0)
 	{
-				ilitek_touch_release_all_point(0);
+		ilitek_touch_release_all_point(0);
+		touch_key_hold_press = 0;
+		i2c.keyflag =0;
+		input_report_key(i2c.input_dev,  KEY_HOMEPAGE, 0);
+		input_report_key(i2c.input_dev,  KEY_BACK, 0);
+		input_report_key(i2c.input_dev,  KEY_MENU, 0);
 	}
 #ifdef TOUCH_PROTOCOL_B
 	input_mt_report_pointer_emulation(i2c.input_dev, true);

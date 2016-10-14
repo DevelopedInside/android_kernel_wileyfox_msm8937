@@ -6,13 +6,7 @@ menuconfig TOUCHSCREEN_ILITEK_2120
 	  to your system.
 	  
 	  If unsure, say N
-if TOUCHSCREEN_ILITEK_2120
 
-config TOUCHSCREEN_ILITEK_2120_X50L
-	bool "Ilitek for X50L"
-	depends on I2C
-	help
-	  Say Y here if you have a Ilitek touchscreen connected
-           to for project X50L.	
+if TOUCHSCREEN_ILITEK_2120
 
 endif

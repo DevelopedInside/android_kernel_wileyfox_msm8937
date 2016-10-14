@@ -189,11 +189,10 @@
 		reg = <0x41>;
 		interrupt-parent = <&tlmm>;
 		interrupts = <65 0>;
-		vdd-supply = <&pm8937_l10>;
+		vdd-supply = <&pm8937_l17>;
 		vcc_i2c-supply = <&pm8937_l5>;
 		ilitek,reset-gpio = <&tlmm 64 0x0>;
 		ilitek,irq-gpio = <&tlmm 65 0x0>;
-
 	};
 
 };
