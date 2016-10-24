@@ -2149,7 +2149,7 @@ static int get_monotonic_soc_raw(struct fg_chip *chip)
 #define FULL_SOC_RAW		0xFF
 static int get_prop_capacity(struct fg_chip *chip)
 {
-	int msoc, rc;
+	int msoc, rc, retries = 0;
 	bool vbatt_low_sts;
 
 	if (chip->use_last_soc && chip->last_soc) {
@@ -2162,6 +2162,13 @@ static int get_prop_capacity(struct fg_chip *chip)
 
 	if (chip->battery_missing)
 		return MISSING_CAPACITY;
+
+	/* Wait up to 1 FG cycle for the profile to load */
+	while (!chip->profile_loaded && !chip->use_otp_profile &&
+		  retries < ((2000/250)+1)) {
+		msleep(250);
+		retries++;
+	}
 
 	if (!chip->profile_loaded && !chip->use_otp_profile)
 		return DEFAULT_CAPACITY;
