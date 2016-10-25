@@ -240,6 +240,7 @@
 		qcom,mdss-dsi-panel-status-valid-params = <1>;
 		qcom,mdss-dsi-panel-status-value = <0x9c>;  
 		qcom,mdss-dsi-panel-status-read-length = <1>;
+		qcom,mdss-dsi-panel-orientation="180";
 		qcom,esd-check-enabled;
 		qcom,mdss-dsi-traffic-mode = "burst_mode";
 		qcom,mdss-dsi-bllp-eof-power-mode;
