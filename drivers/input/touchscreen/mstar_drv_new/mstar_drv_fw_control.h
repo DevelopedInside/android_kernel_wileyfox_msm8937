@@ -219,6 +219,7 @@ typedef enum {
 typedef enum {
     MSG28XX_SW_ID_XXXX = 0x0306, //huashi
     MSG28XX_SW_ID_YYYY = 0x0210, //helitai
+    MSG28XX_SW_ID_BOE  = 0x0106, //boe
     MSG28XX_SW_ID_UNDEFINED = 0xFFFF
 } Msg28xxSwId_e;
 #endif //CONFIG_UPDATE_FIRMWARE_BY_SW_ID

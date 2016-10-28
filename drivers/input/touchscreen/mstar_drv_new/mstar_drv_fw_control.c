@@ -137,6 +137,7 @@ static u8 _gFwDataBuf[MSG28XX_FIRMWARE_WHOLE_SIZE*1024] = {0}; // for update fir
 #ifdef CONFIG_ENABLE_CHIP_TYPE_MSG28XX
 #include "msg28xx_xxxx_update_bin.h" // for MSG28xx
 #include "msg28xx_yyyy_update_bin.h"
+#include "msg28xx_boe_update_bin.h"
 #endif //CONFIG_ENABLE_CHIP_TYPE_MSG28XX
 
 static u32 _gUpdateRetryCount = UPDATE_FIRMWARE_RETRY_COUNT;
@@ -8821,6 +8822,16 @@ void _DrvFwCtrlMsg28xxCheckFirmwareUpdateBySwId(void)
             nUpdateBinMinor = msg28xx_yyyy_update_bin[0x1FFF7]<<8 | msg28xx_yyyy_update_bin[0x1FFF6];
 #endif
         }
+        else if (eSwId == MSG28XX_SW_ID_BOE)
+        {
+#ifdef CONFIG_UPDATE_FIRMWARE_BY_TWO_DIMENSIONAL_ARRAY // By two dimensional array
+            nUpdateBinMajor = msg28xx_boe_update_bin[127][1013]<<8 | msg28xx_boe_update_bin[127][1012]; 
+            nUpdateBinMinor = msg28xx_boe_update_bin[127][1015]<<8 | msg28xx_boe_update_bin[127][1014];
+#else // By one dimensional array
+            nUpdateBinMajor = msg28xx_boe_update_bin[0x1FFF5]<<8 | msg28xx_boe_update_bin[0x1FFF4];
+            nUpdateBinMinor = msg28xx_boe_update_bin[0x1FFF7]<<8 | msg28xx_boe_update_bin[0x1FFF6];
+#endif
+        }
         else //eSwId == MSG28XX_SW_ID_UNDEFINED
         {
             DBG(&g_I2cClient->dev, "eSwId = 0x%x is an undefined SW ID.\n", eSwId);
@@ -8855,6 +8866,17 @@ void _DrvFwCtrlMsg28xxCheckFirmwareUpdateBySwId(void)
                     _DrvFwCtrlStoreFirmwareData(msg28xx_yyyy_update_bin[i], 1024);
 #else // By one dimensional array
                     _DrvFwCtrlStoreFirmwareData(&(msg28xx_yyyy_update_bin[i*1024]), 1024);
+#endif
+                }
+            }
+            else if (eSwId == MSG28XX_SW_ID_BOE)
+            {
+                for (i = 0; i < MSG28XX_FIRMWARE_WHOLE_SIZE; i ++)
+                {
+#ifdef CONFIG_UPDATE_FIRMWARE_BY_TWO_DIMENSIONAL_ARRAY // By two dimensional array
+                    _DrvFwCtrlStoreFirmwareData(msg28xx_boe_update_bin[i], 1024);
+#else // By one dimensional array
+                    _DrvFwCtrlStoreFirmwareData(&(msg28xx_boe_update_bin[i*1024]), 1024);
 #endif
                 }
             }
@@ -8912,6 +8934,17 @@ void _DrvFwCtrlMsg28xxCheckFirmwareUpdateBySwId(void)
                 _DrvFwCtrlStoreFirmwareData(msg28xx_yyyy_update_bin[i], 1024);
 #else // By one dimensional array
                 _DrvFwCtrlStoreFirmwareData(&(msg28xx_yyyy_update_bin[i*1024]), 1024);
+#endif
+            }
+        }
+        else if (eSwId == MSG28XX_SW_ID_BOE)
+        {
+            for (i = 0; i < MSG28XX_FIRMWARE_WHOLE_SIZE; i ++)
+            {
+#ifdef CONFIG_UPDATE_FIRMWARE_BY_TWO_DIMENSIONAL_ARRAY // By two dimensional array
+                _DrvFwCtrlStoreFirmwareData(msg28xx_boe_update_bin[i], 1024);
+#else // By one dimensional array
+                _DrvFwCtrlStoreFirmwareData(&(msg28xx_boe_update_bin[i*1024]), 1024);
 #endif
             }
         }
