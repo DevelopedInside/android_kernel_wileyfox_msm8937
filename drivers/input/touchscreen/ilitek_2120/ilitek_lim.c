@@ -986,7 +986,7 @@ static int ilitek_report_data_2120_new(void) {
 		ret = 0;
 	}
 	len = buf[0];
-	printk("ilitek len = 0x%x buf[0] = 0x%x, buf[1] = 0x%x, buf[2] = 0x%x\n", len, buf[0], buf[1], buf[2]);
+	DBG("ilitek len = 0x%x buf[0] = 0x%x, buf[1] = 0x%x, buf[2] = 0x%x\n", len, buf[0], buf[1], buf[2]);
 	if (len > 20) {
 		printk("ilitek len > 20  return & release\n");
 				ilitek_touch_release_all_point(1);
@@ -1062,10 +1062,10 @@ static int ilitek_report_data_2120_new(void) {
 			DBG("ilitek TOUCH_POINT  i = %d x= %d  y=%d  \n", i,x,y);
 			//report to android system
 			//DBG("Point, ID=%02X, X=%04d, Y=%04d,touch_key_hold_press=%d\n",buf[0]  & 0x3F, x,y,touch_key_hold_press);
-			printk("i2c.keycount:%d,i2c.keyflag:%d\n",i2c.keycount,i2c.keyflag);
+			DBG("i2c.keycount:%d,i2c.keyflag:%d\n",i2c.keycount,i2c.keyflag);
 			#ifdef VIRTUAL_KEY_PAD
 			if(i2c.keyflag == 0){
-				printk("key_x:%d,key_y:%d\n",x,y);
+				DBG("key_x:%d,key_y:%d\n",x,y);
 				if(x ==2250 && y ==2250)
 				{
 					input_report_key(i2c.input_dev, BTN_TOUCH, 1);

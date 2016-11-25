@@ -102,8 +102,6 @@
 #define GESTURE_FUN GESTURE_FUN_1
 #endif
 
-#define VIRTUAL_KEY_PAD
-
 #define DBG(fmt, args...)   if (DBG_FLAG)printk("%s(%d): " fmt, __func__,__LINE__,  ## args)
 #define DBG_CO(fmt, args...)   if (DBG_FLAG||DBG_COR)printk("%s: " fmt, "ilitek",  ## args)
 
