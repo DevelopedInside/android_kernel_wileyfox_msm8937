@@ -264,11 +264,7 @@ static int __acquire_regulator(struct regulator_info *rinfo)
 		}
 	}
 
-	if (!regulator_is_enabled(rinfo->regulator)) {
-		dprintk(VIDC_WARN, "Regulator is not enabled %s\n",
-			rinfo->name);
-		WARN_ON(1);
-	}
+	WARN_ON(!regulator_is_enabled(rinfo->regulator) && (msm_vidc_debug & VIDC_INFO));
 
 	return rc;
 }
@@ -4072,7 +4068,7 @@ static int __disable_regulator(struct regulator_info *rinfo)
 disable_regulator_failed:
 
 	/* Bring attention to this issue */
-	WARN_ON(1);
+	WARN_ON(msm_vidc_debug & VIDC_INFO);
 	return rc;
 }
 
