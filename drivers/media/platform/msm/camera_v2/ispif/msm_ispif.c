@@ -1041,7 +1041,6 @@ static int msm_ispif_stop_immediately(struct ispif_device *ispif,
 			cid_mask, params->entries[i].vfe_intf, 0);
 	}
 
-	rc = msm_ispif_reset_hw(ispif);
 	return rc;
 }
 
@@ -1168,7 +1167,6 @@ static int msm_ispif_stop_frame_boundary(struct ispif_device *ispif,
 	}
 
 end:
-	rc = msm_ispif_reset_hw(ispif);
 	return rc;
 }
 
@@ -1322,7 +1320,8 @@ static inline void msm_ispif_read_irq_status(struct ispif_irq_status *out,
 	}
 
 	if (fatal_err == true) {
-		pr_err("%s: fatal error, stop ispif immediately\n", __func__);
+		pr_err_ratelimited("%s: fatal error, stop ispif immediately\n",
+			__func__);
 		for (i = 0; i < ispif->vfe_info.num_vfe; i++) {
 			msm_camera_io_w(ISPIF_STOP_INTF_IMMEDIATELY,
 				ispif->base + ISPIF_VFE_m_INTF_CMD_0(i));

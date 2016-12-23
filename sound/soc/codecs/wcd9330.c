@@ -2935,7 +2935,7 @@ int tomtom_codec_mclk_enable(struct snd_soc_codec *codec,
 			__func__, enable, dapm);
 		return __tomtom_mclk_enable(tomtom, enable);
 	} else if (tomtom->codec_ext_clk_en_cb)
-		return tomtom_codec_ext_clk_en(codec, true, false);
+		return tomtom_codec_ext_clk_en(codec, enable, dapm);
 	else {
 		dev_err(codec->dev,
 			"%s: Cannot turn on MCLK\n",
@@ -8314,7 +8314,10 @@ static int tomtom_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		wcd9xxx_mbhc_deinit(&tomtom->mbhc);
 		tomtom->mbhc_started = false;
 
-		rco_clk_rate = TOMTOM_MCLK_CLK_9P6MHZ;
+		if (wcd9xxx->mclk_rate == TOMTOM_MCLK_CLK_12P288MHZ)
+			rco_clk_rate = TOMTOM_MCLK_CLK_12P288MHZ;
+		else
+			rco_clk_rate = TOMTOM_MCLK_CLK_9P6MHZ;
 
 		ret = wcd9xxx_mbhc_init(&tomtom->mbhc, &tomtom->resmgr, codec,
 					tomtom_enable_mbhc_micbias,
@@ -8656,7 +8659,10 @@ static int tomtom_codec_probe(struct snd_soc_codec *codec)
 	tomtom->clsh_d.is_dynamic_vdd_cp = false;
 	wcd9xxx_clsh_init(&tomtom->clsh_d, &tomtom->resmgr);
 
-	rco_clk_rate = TOMTOM_MCLK_CLK_9P6MHZ;
+	if (wcd9xxx->mclk_rate == TOMTOM_MCLK_CLK_12P288MHZ)
+		rco_clk_rate = TOMTOM_MCLK_CLK_12P288MHZ;
+	else
+		rco_clk_rate = TOMTOM_MCLK_CLK_9P6MHZ;
 
 	tomtom->fw_data = kzalloc(sizeof(*(tomtom->fw_data)), GFP_KERNEL);
 	if (!tomtom->fw_data) {

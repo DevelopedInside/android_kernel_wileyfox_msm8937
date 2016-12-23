@@ -26,7 +26,6 @@
 #include "kgsl_pwrscale.h"
 #include "kgsl_device.h"
 #include "kgsl_trace.h"
-#include "adreno.h"
 #include <soc/qcom/devfreq_devbw.h>
 
 #define KGSL_PWRFLAGS_POWER_ON 0
@@ -71,7 +70,6 @@ static const char * const clocks[] = {
 static unsigned int ib_votes[KGSL_MAX_BUSLEVELS];
 static int last_vote_buslevel;
 static int max_vote_buslevel;
-static int limit_pwrlevel;
 
 static void kgsl_pwrctrl_clk(struct kgsl_device *device, int state,
 					int requested_state);
@@ -348,6 +346,8 @@ void kgsl_pwrctrl_pwrlevel_change(struct kgsl_device *device,
 	if (new_level == old_level)
 		return;
 
+	kgsl_pwrscale_update_stats(device);
+
 	/*
 	 * Set the active and previous powerlevel first in case the clocks are
 	 * off - if we don't do this then the pwrlevel change won't take effect
@@ -592,8 +592,8 @@ static ssize_t kgsl_pwrctrl_min_pwrlevel_store(struct device *dev,
 		return ret;
 
 	mutex_lock(&device->mutex);
-	if (level > (pwr->num_pwrlevels - 2 - limit_pwrlevel))
-		level = pwr->num_pwrlevels - 2 - limit_pwrlevel;
+	if (level > pwr->num_pwrlevels - 2)
+		level = pwr->num_pwrlevels - 2;
 
 	/* You can't set a minimum power level lower than the maximum */
 	if (level < pwr->max_pwrlevel)
@@ -917,6 +917,31 @@ static ssize_t kgsl_pwrctrl_gpu_available_frequencies_show(
 	return num_chars;
 }
 
+static ssize_t kgsl_pwrctrl_gpu_clock_stats_show(
+					struct device *dev,
+					struct device_attribute *attr,
+					char *buf)
+{
+	struct kgsl_device *device = kgsl_device_from_dev(dev);
+	struct kgsl_pwrctrl *pwr;
+	int index, num_chars = 0;
+
+	if (device == NULL)
+		return 0;
+	pwr = &device->pwrctrl;
+	mutex_lock(&device->mutex);
+	kgsl_pwrscale_update_stats(device);
+	mutex_unlock(&device->mutex);
+	for (index = 0; index < pwr->num_pwrlevels - 1; index++)
+		num_chars += snprintf(buf + num_chars, PAGE_SIZE - num_chars,
+			"%llu ", pwr->clock_times[index]);
+
+	if (num_chars < PAGE_SIZE)
+		buf[num_chars++] = '\n';
+
+	return num_chars;
+}
+
 static ssize_t kgsl_pwrctrl_reset_count_show(struct device *dev,
 					struct device_attribute *attr,
 					char *buf)
@@ -1169,6 +1194,9 @@ static DEVICE_ATTR(gpubusy, 0444, kgsl_pwrctrl_gpubusy_show,
 static DEVICE_ATTR(gpu_available_frequencies, 0444,
 	kgsl_pwrctrl_gpu_available_frequencies_show,
 	NULL);
+static DEVICE_ATTR(gpu_clock_stats, 0444,
+	kgsl_pwrctrl_gpu_clock_stats_show,
+	NULL);
 static DEVICE_ATTR(max_pwrlevel, 0644,
 	kgsl_pwrctrl_max_pwrlevel_show,
 	kgsl_pwrctrl_max_pwrlevel_store);
@@ -1214,6 +1242,7 @@ static const struct device_attribute *pwrctrl_attr_list[] = {
 	&dev_attr_deep_nap_timer,
 	&dev_attr_gpubusy,
 	&dev_attr_gpu_available_frequencies,
+	&dev_attr_gpu_clock_stats,
 	&dev_attr_max_pwrlevel,
 	&dev_attr_min_pwrlevel,
 	&dev_attr_thermal_pwrlevel,
@@ -1343,6 +1372,9 @@ static void kgsl_pwrctrl_clk(struct kgsl_device *device, int state,
 					pwr->pwrlevels[pwr->num_pwrlevels - 1].
 					gpu_freq);
 			}
+
+			/* Turn off the IOMMU clocks */
+			kgsl_mmu_disable_clk(&device->mmu);
 		} else if (requested_state == KGSL_STATE_SLEEP) {
 			/* High latency clock maintenance. */
 			for (i = KGSL_MAX_CLKS - 1; i > 0; i--)
@@ -1383,7 +1415,11 @@ static void kgsl_pwrctrl_clk(struct kgsl_device *device, int state,
 					pwr->gpu_bimc_interface_enabled = 1;
 				}
 			}
+
+			/* Turn on the IOMMU clocks */
+			kgsl_mmu_enable_clk(&device->mmu);
 		}
+
 	}
 }
 
@@ -1665,8 +1701,6 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	struct msm_bus_scale_pdata *bus_scale_table;
 	struct device_node *gpubw_dev_node = NULL;
 	struct platform_device *p2dev;
-	struct adreno_device *adreno_dev  =
-			container_of(device, struct adreno_device, dev);
 
 	bus_scale_table = msm_bus_cl_get_pdata(device->pdev);
 	if (bus_scale_table == NULL)
@@ -1709,13 +1743,10 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 		return -EINVAL;
 	}
 
-	if (adreno_is_a506(adreno_dev))
-		limit_pwrlevel = 1;
-
 	/* Initialize the user and thermal clock constraints */
 
 	pwr->max_pwrlevel = 0;
-	pwr->min_pwrlevel = pwr->num_pwrlevels - 2 - limit_pwrlevel;
+	pwr->min_pwrlevel = pwr->num_pwrlevels - 2;
 	pwr->thermal_pwrlevel = 0;
 
 	pwr->wakeup_maxpwrlevel = 0;
