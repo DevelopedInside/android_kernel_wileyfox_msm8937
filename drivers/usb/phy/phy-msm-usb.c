@@ -801,15 +801,9 @@ static int msm_otg_reset(struct usb_phy *phy)
 							USB_HS_APF_CTRL);
 
 	/*
-	 * Enable USB BAM if USB BAM is enabled already before block reset as
-	 * block reset also resets USB BAM registers.
+	 * Disable USB BAM as block reset resets USB BAM registers.
 	 */
-	if (test_bit(ID, &motg->inputs)) {
-		msm_usb_bam_enable(CI_CTRL,
-				   phy->otg->gadget->bam2bam_func_enabled);
-	} else {
-		dev_dbg(phy->dev, "host mode BAM not enabled\n");
-	}
+	msm_usb_bam_enable(CI_CTRL, false);
 
 	return 0;
 }
@@ -3869,10 +3863,11 @@ set_msm_otg_perf_mode(struct device *dev, struct device_attribute *attr,
 		ret = clk_set_rate(motg->core_clk, clk_rate);
 		if (ret)
 			pr_err("sys_clk set_rate fail:%d %ld\n", ret, clk_rate);
+		msm_otg_dbg_log_event(&motg->phy, "OTG PERF SET",
+							clk_rate, ret);
 	} else {
 		pr_err("usb sys_clk rate is undefined\n");
 	}
-	msm_otg_dbg_log_event(&motg->phy, "OTG PERF SET", clk_rate, ret);
 
 	return count;
 }

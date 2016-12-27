@@ -64,10 +64,16 @@
 			reg = <0x0 0x86800000 0x0 0x5000000>;
 		};
 
-		reloc_mem: reloc_region@0 {
+		adsp_fw_mem: adsp_fw_region@0 {
 			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x8b800000 0x0 0x1800000>;
+			reg = <0x0 0x8b800000 0x0 0x1100000>;
+		};
+
+		wcnss_fw_mem: wcnss_fw_region@0 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0x0 0x8c900000 0x0 0x700000>;
 		};
 
 		venus_mem: venus_region@0 {
@@ -83,7 +89,6 @@
 			reusable;
 			alignment = <0 0x400000>;
 			size = <0 0x7000000>;
-			status = "disabled";
 		};
 
 		qseecom_mem: qseecom_region@0 {
@@ -908,7 +913,7 @@
 			label = "modem";
 		};
 
-		qcom,client_3 {
+		mem_client_3_size: qcom,client_3 {
 			compatible = "qcom,memshare-peripheral";
 			qcom,peripheral-size = <0x0>;
 			qcom,client-id = <1>;
@@ -1389,12 +1394,12 @@
 		qcom,devfreq,freq-table = <50000000 200000000>;
 
 		qcom,pm-qos-irq-type = "affine_irq";
-		qcom,pm-qos-irq-latency = <13 281>;
+		qcom,pm-qos-irq-latency = <13 651>;
 
 		qcom,pm-qos-cpu-groups = <0x0f>;
-		qcom,pm-qos-cmdq-latency-us = <13 281>;
+		qcom,pm-qos-cmdq-latency-us = <13 651>;
 
-		qcom,pm-qos-legacy-latency-us = <13 281>;
+		qcom,pm-qos-legacy-latency-us = <13 651>;
 
 		qcom,msm-bus,name = "sdhc1";
 		qcom,msm-bus,num-cases = <9>;
@@ -1433,10 +1438,10 @@
 		qcom,large-address-bus;
 
 		qcom,pm-qos-irq-type = "affine_irq";
-		qcom,pm-qos-irq-latency = <13 281>;
+		qcom,pm-qos-irq-latency = <13 651>;
 
 		qcom,pm-qos-cpu-groups = <0x0f>;
-		qcom,pm-qos-legacy-latency-us = <13 281>;
+		qcom,pm-qos-legacy-latency-us = <13 651>;
 
 		qcom,msm-bus,name = "sdhc2";
 		qcom,msm-bus,num-cases = <8>;
@@ -1591,7 +1596,7 @@
 		/* GPIO output to lpass */
 		qcom,gpio-force-stop = <&smp2pgpio_ssr_smp2p_2_out 0 0>;
 
-		memory-region = <&reloc_mem>;
+		memory-region = <&adsp_fw_mem>;
 	};
 
 	qcom,pronto@a21b000 {
@@ -1629,7 +1634,7 @@
 
 		/* GPIO output to wcnss */
 		qcom,gpio-force-stop = <&smp2pgpio_ssr_smp2p_4_out 0 0>;
-		memory-region = <&reloc_mem>;
+		memory-region = <&wcnss_fw_mem>;
 	};
 
 	qcom,venus@1de0000 {

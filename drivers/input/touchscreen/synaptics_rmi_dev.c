@@ -333,7 +333,6 @@ static ssize_t rmidev_read(struct file *filp, char __user *buf,
 
 clean_up:
 	mutex_unlock(&(dev_data->file_mutex));
-
 	kfree(tmpbuf);
 	return retval;
 }
