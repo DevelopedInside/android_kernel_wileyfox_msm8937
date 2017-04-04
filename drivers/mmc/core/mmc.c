@@ -1921,7 +1921,7 @@ reinit:
 		err = mmc_select_hs400(card);
 		if (err)
 			goto err;
-	} else {
+	} else if (!mmc_card_hs400(card)) {
 		/* Select the desired bus width optionally */
 		err = mmc_select_bus_width(card);
 		if (!IS_ERR_VALUE(err) && mmc_card_hs(card)) {
