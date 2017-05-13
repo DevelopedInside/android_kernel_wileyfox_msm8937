@@ -477,15 +477,15 @@ int ilitek_upgrade_firmware(void)
 	if (!driver_upgrade_flag) {
 		for(i = 0; i < 4; i++)
 		{
-			printk("i2c.firmware_ver[%d] = %d, firmware_ver[%d] = %d\n", i, i2c.firmware_ver[i], i, CTPM_FW[i + 17]);
-			if((i2c.firmware_ver[i] > CTPM_FW[i + 17]) || ((i == 3) && (i2c.firmware_ver[3] == CTPM_FW[3 + 17])))
+			printk("i2c.firmware_ver[%d] = %d, firmware_ver[%d] = %d\n", i, i2c.firmware_ver[i], i, CTPM_FW[i + 18]);
+			if((i2c.firmware_ver[i] > CTPM_FW[i + 18]) || ((i == 3) && (i2c.firmware_ver[3] == CTPM_FW[3 + 18])))
 			{
 				ret = 1;
 				printk("ilitek_upgrade_firmware Do not need update\n"); 
 				return 1;
 				//break;
 			}
-			else if(i2c.firmware_ver[i] < CTPM_FW[i + 17])
+			else if(i2c.firmware_ver[i] < CTPM_FW[i + 18])
 			{
 				break;
 			}

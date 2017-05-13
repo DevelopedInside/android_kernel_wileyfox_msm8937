@@ -56,6 +56,7 @@ enum ipahal_reg_name {
 	IPA_IRQ_EE_UC_n,
 	IPA_ENDP_INIT_HDR_METADATA_MASK_n,
 	IPA_ENDP_INIT_HDR_METADATA_n,
+	IPA_ENABLE_GSI,
 	IPA_ENDP_INIT_RSRC_GRP_n,
 	IPA_SHARED_MEM_SIZE,
 	IPA_SRAM_DIRECT_ACCESS_n,
@@ -82,8 +83,6 @@ enum ipahal_reg_name {
 	IPA_RX_HPS_CLIENTS_MAX_DEPTH_1,
 	IPA_QSB_MAX_WRITES,
 	IPA_QSB_MAX_READS,
-	IPA_TX_CFG,
-	IPA_IDLE_INDICATION_CFG,
 	IPA_DPS_SEQUENCER_FIRST,
 	IPA_HPS_SEQUENCER_FIRST,
 	IPA_REG_MAX,
@@ -119,7 +118,7 @@ struct ipahal_reg_endp_init_route {
 };
 
 /*
- * struct ipahal_reg_endp_init_rsrc_grp - IPA_ENDP_INIT_RSRC_GRP_n register
+ * struct ipahal_reg_endp_init_rsrc_grp - PA_ENDP_INIT_RSRC_GRP_n register
  * @rsrc_grp: Index of group for this ENDP. If this ENDP is a source-ENDP,
  *	index is for source-resource-group. If destination ENPD, index is
  *	for destination-resoruce-group.
@@ -234,8 +233,7 @@ enum ipahal_reg_dbg_cnt_type {
  * @src_pipe - Specific Pipe to match. If FF, no need to match
  *	specific pipe
  * @rule_idx_pipe_rule - Global Rule or Pipe Rule. If pipe, then indicated by
- *	src_pipe. Starting at IPA V3_5,
- *	no support on Global Rule. This field will be ignored.
+ *	src_pipe
  * @rule_idx - Rule index. Irrelevant for type General
  */
 struct ipahal_reg_debug_cnt_ctrl {
@@ -244,7 +242,7 @@ struct ipahal_reg_debug_cnt_ctrl {
 	bool product;
 	u8 src_pipe;
 	bool rule_idx_pipe_rule;
-	u16 rule_idx;
+	u8 rule_idx;
 };
 
 /*
@@ -318,28 +316,6 @@ struct ipahal_reg_qcncm {
 	bool mode_en;
 	u32 mode_val;
 	u32 undefined;
-};
-
-/*
- * struct ipahal_reg_tx_cfg - IPA TX_CFG register
- * @tx0_prefetch_disable: Disable prefetch on TX0
- * @tx1_prefetch_disable: Disable prefetch on TX1
- * @prefetch_almost_empty_size: Prefetch almost empty size
- */
-struct ipahal_reg_tx_cfg {
-	bool tx0_prefetch_disable;
-	bool tx1_prefetch_disable;
-	u16 prefetch_almost_empty_size;
-};
-
-/*
- * struct ipahal_reg_idle_indication_cfg - IPA IDLE_INDICATION_CFG register
- * @const_non_idle_enable: enable the asserting of the IDLE value and DCD
- * @enter_idle_debounce_thresh:  configure the debounce threshold
- */
-struct ipahal_reg_idle_indication_cfg {
-	u16 enter_idle_debounce_thresh;
-	bool const_non_idle_enable;
 };
 
 /*

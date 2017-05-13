@@ -455,7 +455,6 @@ static void fiq_debugger_help(struct fiq_debugger_state *state)
 			" nosleep       Disable sleep while in FIQ\n"
 			" console       Switch terminal to console\n"
 			" ps            Process list\n");
-
 #ifdef CONFIG_KGDB
 	if (fiq_kgdb_enable) {
 		fiq_debugger_printf(&state->output,
@@ -536,14 +535,15 @@ static bool fiq_debugger_fiq_exec(struct fiq_debugger_state *state,
 	} else if (!strcmp(cmd, "cpu")) {
 		if (sysrq_on())
 			fiq_debugger_printf(&state->output, "cpu %d\n",
-					state->current_cpu);
+					    state->current_cpu);
 	} else if (!strncmp(cmd, "cpu ", 4) && sysrq_on()) {
 		unsigned long cpu = 0;
 		if (kstrtoul(cmd + 4, 10, &cpu) == 0)
 			fiq_debugger_switch_cpu(state, cpu);
 		else
 			fiq_debugger_printf(&state->output, "invalid cpu\n");
-		fiq_debugger_printf(&state->output, "cpu %d\n", state->current_cpu);
+		fiq_debugger_printf(&state->output, "cpu %d\n",
+				    state->current_cpu);
 	} else {
 		if (state->debug_busy) {
 			fiq_debugger_printf(&state->output,
