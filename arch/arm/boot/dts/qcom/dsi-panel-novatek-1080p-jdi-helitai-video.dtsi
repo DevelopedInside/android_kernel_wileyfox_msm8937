@@ -19,17 +19,17 @@
 	dsi_novatek_1080p_jdi_helitai_video: qcom,mdss_dsi_novatek_1080p_jdi_hlt_video {
 		qcom,mdss-dsi-panel-name = "novatek 1080p jdi helitai video mode dsi panel";
 		qcom,mdss-dsi-panel-type = "dsi_video_mode";
-		qcom,mdss-dsi-panel-framerate = <60>;
+		qcom,mdss-dsi-panel-framerate = <57>;
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <1080>;
 		qcom,mdss-dsi-panel-height = <1920>;
-		qcom,mdss-dsi-h-front-porch = <96>;
-		qcom,mdss-dsi-h-back-porch = <64>;
-		qcom,mdss-dsi-h-pulse-width = <16>;
+		qcom,mdss-dsi-h-front-porch = <128>;
+		qcom,mdss-dsi-h-back-porch = <18>;
+		qcom,mdss-dsi-h-pulse-width = <10>;
 		qcom,mdss-dsi-h-sync-skew = <0>;
-		qcom,mdss-dsi-v-back-porch = <16>;
-		qcom,mdss-dsi-v-front-porch = <16>;
+		qcom,mdss-dsi-v-back-porch = <1>;
+		qcom,mdss-dsi-v-front-porch = <18>;
 		qcom,mdss-dsi-v-pulse-width = <2>;
 		qcom,mdss-dsi-h-left-border = <0>;
 		qcom,mdss-dsi-h-right-border = <0>;
@@ -264,7 +264,7 @@
 				29 01 00 00 00 00 02 FF 26
 				29 01 00 00 00 00 02 00 AB
 				29 01 00 00 00 00 02 01 00
-				29 01 00 00 00 00 02 02 64
+				29 01 00 00 00 00 02 02 FF
 				29 01 00 00 00 00 02 03 06
 				29 01 00 00 00 00 02 04 66
 				29 01 00 00 00 00 02 05 25
@@ -275,7 +275,7 @@
 				29 01 00 00 00 00 02 0C 14
 				29 01 00 00 00 00 02 0D 28
 				29 01 00 00 00 00 02 0E 00
-				29 01 00 00 00 00 02 0F FF
+				29 01 00 00 00 00 02 0F B0
 				29 01 00 00 00 00 02 10 00
 				29 01 00 00 00 00 02 11 01
 				29 01 00 00 00 00 02 12 07
@@ -359,10 +359,10 @@
 				29 01 00 00 00 00 02 78 00
 				29 01 00 00 00 00 02 79 03
 				29 01 00 00 00 00 02 7A 20
-				29 01 00 00 00 00 02 7B 23
+				29 01 00 00 00 00 02 7B 24
 				29 01 00 00 00 00 02 7C 00
 				29 01 00 00 00 00 02 7D A5
-				29 01 00 00 00 00 02 7E 00
+				29 01 00 00 00 00 02 7E 80
 				29 01 00 00 00 00 02 7F A3
 				29 01 00 00 00 00 02 80 05
 				29 01 00 00 00 00 02 81 27
@@ -828,9 +828,9 @@
 		qcom,mdss-dsi-lane-1-state;
 		qcom,mdss-dsi-lane-2-state;
 		qcom,mdss-dsi-lane-3-state;
-		qcom,mdss-dsi-panel-timings = [db 34 22 00 64 66 28 38 2b 03 04 00];
-		qcom,mdss-dsi-t-clk-post = <0x02>;
-		qcom,mdss-dsi-t-clk-pre = <0x29>;
+		qcom,mdss-dsi-panel-timings = [D6 34 22 00 62 66 26 36 28 03 04 00];
+		qcom,mdss-dsi-t-clk-post = <0x03>;
+		qcom,mdss-dsi-t-clk-pre = <0x28>;
 		qcom,mdss-dsi-bl-min-level = <1>;
 		qcom,mdss-dsi-bl-max-level = <3839>; //4095,3231
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
