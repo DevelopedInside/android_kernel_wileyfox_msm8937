@@ -202,13 +202,13 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			qcom,iterm-ma = <200>;
-			qcom,float-voltage-mv = <4400>;
+			qcom,iterm-ma = <100>;
+			qcom,float-voltage-mv = <4200>;
 			qcom,resume-delta-mv = <200>;
 			qcom,chg-inhibit-fg;
 			qcom,rparasitic-uohm = <100000>;
 			qcom,bms-psy-name = "bms";
-			qcom,thermal-mitigation = <1500 1200 900 0>;
+			qcom,thermal-mitigation = <1500 700 600 0>;
 			qcom,parallel-usb-min-current-ma = <1400>;
 			qcom,parallel-usb-9v-min-current-ma = <900>;
 			qcom,parallel-allowed-lowering-ma = <500>;
@@ -216,12 +216,6 @@
 			qcom,force-aicl-rerun;
 			qcom,aicl-rerun-period-s = <180>;
 			qcom,autoadjust-vfloat;
-			qcom,enable-hvdcp-9v;//TQY
-			qcom,fastchg-current-ma=<2500>;
-			qcom,override-usb-current;
-
-			qcom,float-voltage-comp=<0x8>;
-			qcom,fastchg-current-comp=<700>;
 
 			qcom,chgr@1000 {
 				reg = <0x1000 0x100>;
@@ -323,23 +317,16 @@
 			compatible = "qcom,qpnp-fg";
 			#address-cells = <1>;
 			#size-cells = <1>;
-			qcom,resume-soc = <97>;
+			qcom,resume-soc = <95>;
 			status = "okay";
 			qcom,bcl-lm-threshold-ma = <127>;
 			qcom,bcl-mh-threshold-ma = <405>;
-			qcom,fg-iterm-ma = <250>;
-			qcom,fg-chg-iterm-ma = <200>;
+			qcom,fg-iterm-ma = <150>;
+			qcom,fg-chg-iterm-ma = <100>;
 			qcom,pmic-revid = <&pmi8950_revid>;
-			qcom,fg-cutoff-voltage-mv = <3400>;
+			qcom,fg-cutoff-voltage-mv = <3500>;
 			qcom,cycle-counter-en;
 			qcom,capacity-learning-on;
-
-			qcom,fg-cc-cv-threshold-mv=<4390>;
-			qcom,ext-sense-type;//TQY
-			qcom,warm-bat-decidegc=<480>;
-			qcom,hot-bat-decidegc=<550>;
-			qcom,cold-bat-decidegc=<(-40)>;
-			qcom,thermal-coefficients=[C8 86 C1 50 D3 37];
 
 			qcom,fg-soc@4000 {
 			status = "okay";
@@ -540,7 +527,7 @@
 			qcom,dim-method = "linear";
 			qcom,hyb-thres = <625>;
 			qcom,sync-dly-us = <800>;
-			qcom,fs-curr-ua = <22500>;//TQY
+			qcom,fs-curr-ua = <20000>;
 			qcom,led-strings-list = [00 01];
 			qcom,en-ext-pfet-sc-pro;
 			qcom,cons-sync-write-delay-us = <1000>;
@@ -638,7 +625,7 @@
 			qcom,wave-play-rate-us = <5263>;
 			qcom,actuator-type = "erm";
 			qcom,wave-shape = "square";
-			qcom,vmax-mv = <3200>;
+			qcom,vmax-mv = <2000>;
 			qcom,ilim-ma = <800>;
 			qcom,sc-deb-cycles = <8>;
 			qcom,int-pwm-freq-khz = <505>;

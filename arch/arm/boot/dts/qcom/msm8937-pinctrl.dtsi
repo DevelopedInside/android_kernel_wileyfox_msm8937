@@ -177,6 +177,32 @@
 		};
 
 		tlmm_pmi_flash_led {
+			rear_flash_led_enable: rear_flash_led_enable {
+				mux {
+					pins = "gpio33";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio33";
+					drive-strength = <16>;
+					output-high;
+				};
+			};
+
+			rear_flash_led_disable: rear_flash_led_disable {
+				mux {
+					pins = "gpio33";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio33";
+					drive-strength = <2>;
+					output-low;
+				};
+			};
+
 			front_flash_led_enable: front_flash_led_enable {
 				mux {
 					pins = "gpio50";
@@ -263,121 +289,6 @@
 				};
 			};
 		};
-
-// miaocht add start --------------
-		fp_reset_pin_default {
-			fp_reset_default: reset_default {
-				mux {
-					pins = "gpio8";
-					function = "gpio";
-				};
-
-				config {
-					pins = "gpio8";
-					drive-strength = <16>;
-					bias-pull-up; 
-				};
-			};
-		};
-		fp_reset_pin_suspend {
-			fp_reset_suspend: reset_suspend {
-				mux {
-					pins = "gpio8";
-					function = "gpio";
-				};
-
-				config {
-					pins = "gpio8";
-					drive-strength = <16>;
-					bias-pull-none; 
-				};
-			};
-		};
-
-		fp_irq_pin_default {
-			fp_irq_default: irq_default {
-				mux {
-					pins = "gpio9";
-					function = "gpio";
-				};
-
-				config {
-					pins = "gpio9";
-					drive-strength = <16>;
-					bias-disable;
-				};
-			};
-		};
-		fp_irq_pin_suspend {
-			fp_irq_suspend: irq_suspend {
-				mux {
-					pins = "gpio9";
-					function = "gpio";
-				};
-
-				config {
-					pins = "gpio9";
-					drive-strength = <16>;
-					bias-disable;
-				};
-			};
-		};
-
-		spi6 {
-			spi6_default: spi6_default {
-				mux {
-					pins = "gpio20", "gpio21", "gpio23";
-					function = "blsp_spi6";
-				};
-
-				config {
-					pins = "gpio20", "gpio21", "gpio23";
-					drive-strength = <12>;
-					bias-disable = <0>;
-				};
-			};
-
-			spi6_sleep: spi6_sleep {
-				mux {
-					pins = "gpio20", "gpio21", "gpio23";
-					function = "gpio";
-				};
-
-				config {
-					pins = "gpio20", "gpio21", "gpio23";
-					drive-strength = <2>;
-					bias-pull-down;
-				};
-			};
-
-			spi6_cs0_active: cs0_active {
-				mux {
-					pins = "gpio22";
-					function = "blsp_spi6";
-				};
-
-				config {
-					pins = "gpio22";
-					drive-strength = <2>;
-					bias-pull-down;
-				};
-			};
-
-			spi6_cs0_sleep: cs0_sleep {
-				mux {
-					pins = "gpio22";
-					function = "gpio";
-				};
-
-				config {
-					pins = "gpio22";
-					drive-strength = <2>;
-					bias-pull-up;
-				};
-			};
-		};
-
-// miaocht add end --------------
 
 		wcnss_pmux_5wire {
 			/* Active configuration of bus pins */
@@ -536,8 +447,7 @@
 				config {
 					pins = "gpio60", "gpio98", "gpio99";
 					drive-strength = <2>; /* 2 mA */
-					//bias-pull-down; /* pull down */
-					bias-pull-up;
+					bias-pull-down; /* pull down */
 					input-enable;
 				};
 			};
@@ -1373,6 +1283,36 @@
 
 				config {
 					pins = "gpio29", "gpio30";
+					drive-strength = <2>; /* 2 MA */
+					bias-disable; /* No PULL */
+				};
+			};
+
+			cci1_active: cci1_active {
+				/* cci1 active state */
+				mux {
+					/* CLK, DATA */
+					pins = "gpio31", "gpio32";
+					function = "cci_i2c";
+				};
+
+				config {
+					pins = "gpio31", "gpio32";
+					drive-strength = <2>; /* 2 MA */
+					bias-disable; /* No PULL */
+				};
+			};
+
+			cci1_suspend: cci1_suspend {
+				/* cci1 suspended state */
+				mux {
+					/* CLK, DATA */
+					pins = "gpio31", "gpio32";
+					function = "cci_i2c";
+				};
+
+				config {
+					pins = "gpio31", "gpio32";
 					drive-strength = <2>; /* 2 MA */
 					bias-disable; /* No PULL */
 				};

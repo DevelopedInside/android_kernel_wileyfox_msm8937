@@ -16,6 +16,11 @@
 
 &flash_led {
 	compatible = "qcom,qpnp-flash-led";
+	reg = <0xd300 0x100>;
+	pinctrl-names = "flash_led_enable","flash_led_disable";
+	pinctrl-0 = <&rear_flash_led_enable>;
+	pinctrl-1 = <&rear_flash_led_disable>;
+	qcom,follow-otst2-rb-disabled;
 };
 
 &wled {
@@ -70,6 +75,16 @@
 	pinctrl-0 = <&uart_console_active>;
 };
 
+&pmi_haptic{
+	qcom,wave-play-rate-us = <4165>;
+	qcom,actuator-type = "lra";
+	qcom,lra-auto-res-mode="qwd";
+	qcom,lra-high-z="opt1";
+	qcom,lra-res-cal-period = <4>;
+	qcom,correct-lra-drive-freq;
+	qcom,misc-trim-error-rc19p2-clk-reg-present;
+};
+
 &spi_3 { /* BLSP1 QUP3 */
 	maxim_sti@0 {
 		status = "disabled";
@@ -91,115 +106,6 @@
 		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
 		pinctrl-2 = <&ts_release>;
 	};
-};
-
-&spi_6 { /* BLSP2 QUP2 */
-	goodix_gf@0 {
-		status = "ok";
-		compatible = "gf,goodix";
-		reg = <0>;
-		pinctrl-names = "fp_active","fp_suspend";
-		spi-max-frequency = <16000000>;
-		gf_cs_gpio = <&tlmm 22 0x0>;
-		gf_irq_gpio = <&tlmm 9 0x0>;
-		gf_rst_gpio = <&tlmm 8 0x0>;
-		pinctrl-0 = <&fp_reset_default &fp_reset_suspend>;
-		pinctrl-1 = <&fp_irq_default &fp_irq_suspend>;
-		//interrupt-parent = <&msm_gpio>;
-		//interrupts = <12 0>;
-		//interrupt-names = "gf_irq";
-		avdd-supply = <&pm8937_l10>;
-		dvdd-supply = <&pm8937_l6>;
-	};
-};
-
-&i2c_2 { /* BLSP1 QUP1 */
-	aw87319_pa:@58 {
-		compatible = "awinic,aw87319_pa";
-		reg = <0x58>;
-	};
-	aw2013@45 {
-		compatible = "awinic,aw2013";
-		reg = <0x45>;
-		vdd-supply = <&pm8937_l17>;
-		vcc-supply = <&pm8937_l5>;
-
-		aw2013,green {
-			aw2013,name = "green";
-			aw2013,id = <0>;
-			aw2013,max-brightness = <255>;
-			aw2013,max-current = <1>;
-			aw2013,rise-time-ms = <3>;
-			aw2013,hold-time-ms = <2>;
-			aw2013,fall-time-ms = <3>;
-			aw2013,off-time-ms = <4>;
-		};
-
-		aw2013,red {
-			aw2013,name = "red";
-			aw2013,id = <1>;
-			aw2013,max-brightness = <255>;
-			aw2013,max-current = <1>;
-			aw2013,rise-time-ms = <3>;
-			aw2013,hold-time-ms = <2>;
-			aw2013,fall-time-ms = <3>;
-			aw2013,off-time-ms = <4>;
-		};
-		aw2013,blue {
-			aw2013,name = "blue";
-			aw2013,id = <2>;
-			aw2013,max-brightness = <255>;
-			aw2013,max-current = <1>;
-			aw2013,rise-time-ms = <2>;
-			aw2013,hold-time-ms = <1>;
-			aw2013,fall-time-ms = <2>;
-			aw2013,off-time-ms = <1>;
-		};
-	};
-	/* Parallel-charger configuration */
-	smb135x-charger@1c {
-		compatible = "qcom,smb1358-charger";
-		reg = <0x1c>;
-		qcom,parallel-en-pin-polarity = <1>;
-		qcom,fastchg-ma = <2500>;
-		qcom,parallel-charger;
-		qcom,float-voltage-mv = <4350>;
-		qcom,recharge-mv = <100>;
-		qcom,thermal-mitigation = <1500 700 600 0>;
-	};
-};
-
-&i2c_3 { /* BLSP2 QUP3 */
-	status = "ok";
-	mstar@26 {
-		compatible = "mstar,msg2xxx";
-		reg = <0x26>;
-		interrupt-parent = <&tlmm>;
-		interrupts = <65 0>;
-		vdd-supply = <&pm8937_l10>;
-		vcc_i2c-supply = <&pm8937_l5>;
-		pinctrl-names = "pmx_ts_active","pmx_ts_suspend",
-		"pmx_ts_release";
-		pinctrl-0 = <&ts_int_active &ts_reset_active>;
-		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
-		pinctrl-2 = <&ts_release>;
-		mstar,name ="mstar";
-		mstar,rst-gpio = <&tlmm 64 0x0>;
-		mstar,irq-gpio = <&tlmm 65 0x0>;
-
-	};
-
-	ilitek@41 {
-		compatible = "ilitek,2120";
-		reg = <0x41>;
-		interrupt-parent = <&tlmm>;
-		interrupts = <65 0>;
-		vdd-supply = <&pm8937_l17>;
-		vcc_i2c-supply = <&pm8937_l5>;
-		ilitek,reset-gpio = <&tlmm 64 0x0>;
-		ilitek,irq-gpio = <&tlmm 65 0x0>;
-	};
-
 };
 
 &i2c_5 { /* BLSP2 QUP1 */
@@ -304,7 +210,7 @@
 };
 
 &mdss_dsi0 {
-	qcom,dsi-pref-prim-pan = <&dsi_ili9881c_720p_hsd_5in_helitai_video>;
+	qcom,dsi-pref-prim-pan = <&dsi_truly_1080_vid>;
 	pinctrl-names = "mdss_default", "mdss_sleep";
 	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
 	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
@@ -312,6 +218,20 @@
 	qcom,platform-te-gpio = <&tlmm 24 0>;
 	qcom,platform-enable-gpio = <&tlmm 99 0>;
 	qcom,platform-reset-gpio = <&tlmm 60 0>;
+	qcom,platform-bklight-en-gpio = <&tlmm 98 0>;
+};
+
+&mdss_dsi1 {
+	status = "disabled";
+	qcom,dsi-pref-prim-pan = <&dsi_truly_1080_vid>;
+	pinctrl-names = "mdss_default", "mdss_sleep";
+	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
+	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
+
+	qcom,platform-te-gpio = <&tlmm 24 0>;
+	qcom,platform-enable-gpio = <&tlmm 99 0>;
+	qcom,platform-reset-gpio = <&tlmm 60 0>;
+	qcom,platform-bklight-en-gpio = <&tlmm 98 0>;
 };
 
 &dsi_truly_1080_vid {
@@ -320,26 +240,17 @@
 	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
 };
 
-&dsi_ili9881c_720p_hsd_5in_helitai_video {
+&dsi_truly_1080_cmd {
 	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-//	qcom,mdss-dsi-pan-enable-dynamic-fps;
-//	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
+	qcom,ulps-enabled;
+	qcom,partial-update-enabled;
+	qcom,panel-roi-alignment = <2 2 4 2 1080 2>;
 };
 
-&dsi_ili9881c_720p_inno_5in_helitai_video {
+&dsi_truly_720_vid {
 	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-//	qcom,mdss-dsi-pan-enable-dynamic-fps;
-//	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
-};
-
-&dsi_novatek_1080p_jdi_helitai_video {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-};
-
-&dsi_ili9881c_720p_boe_huashi_video {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-//	qcom,mdss-dsi-pan-enable-dynamic-fps;
-//	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
+	qcom,mdss-dsi-pan-enable-dynamic-fps;
+	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
 };
 
 /* PM8937 GPIO configuration */

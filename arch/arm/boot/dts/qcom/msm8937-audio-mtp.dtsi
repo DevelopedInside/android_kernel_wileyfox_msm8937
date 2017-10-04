@@ -11,6 +11,12 @@
  * GNU General Public License for more details.
  */
 
+&int_codec {
+	status = "okay";
+	qcom,model = "msm8952-snd-card-mtp";
+	qcom,msm-hs-micbias-type = "external";
+};
+
 &pm8937_cajon_dig {
 	status = "okay";
 };
@@ -19,18 +25,10 @@
 	status = "okay";
 };
 
-&wsa881x_i2c_e {
-	status = "disabled";
-};
-
-&wsa881x_i2c_44 {
-	status = "disabled";
-};
-
 &wsa881x_i2c_f {
-	status = "disabled";
+	status = "okay";
 };
 
 &wsa881x_i2c_45 {
-	status = "disabled";
+	status = "okay";
 };
