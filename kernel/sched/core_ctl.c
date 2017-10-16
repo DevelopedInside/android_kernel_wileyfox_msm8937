@@ -22,6 +22,12 @@
 
 #include <trace/events/sched.h>
 
+#ifdef CONFIG_SCHED_QHMP
+#include "qhmp_sched.h"
+#else
+#include "sched.h"
+#endif
+
 #define MAX_CPUS_PER_CLUSTER 4
 #define MAX_CLUSTERS 2
 
@@ -577,7 +583,8 @@ static bool eval_need(struct cluster_data *cluster)
 	spin_lock_irqsave(&state_lock, flags);
 	thres_idx = cluster->online_cpus ? cluster->online_cpus - 1 : 0;
 	list_for_each_entry(c, &cluster->lru, sib) {
-		if (c->busy >= cluster->busy_up_thres[thres_idx])
+		if (c->busy >= cluster->busy_up_thres[thres_idx] ||
+			sched_cpu_high_irqload(c->cpu))
 			c->is_busy = true;
 		else if (c->busy < cluster->busy_down_thres[thres_idx])
 			c->is_busy = false;
