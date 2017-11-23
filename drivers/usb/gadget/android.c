@@ -36,15 +36,10 @@
 
 #include "gadget_chips.h"
 
-#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
-#include <linux/usb/usb_custom_cfg.h>//TQY added
-#endif
-
 #ifdef CONFIG_MEDIA_SUPPORT
 #include "f_uvc.h"
 #include "u_uvc.h"
 #endif
-
 #include "u_fs.h"
 #include "u_ecm.h"
 #include "u_ncm.h"
@@ -92,30 +87,6 @@ MODULE_VERSION("1.0");
 
 static const char longname[] = "Gadget Android";
 
-// TQY add start
-#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
-static int usb_current_mode = 1;
-static int debug_current_mode = 0;  //debug close
-
-static int get_android_usbmode(char *str)
-{
-	if(!strcmp(str, "user"))
-		usb_current_mode  = 0;
-	else
-		usb_current_mode  = 1;
-
-	return 1;
-}
-__setup("androidboot.usermode=", get_android_usbmode);
-
-static int get_android_debugmode(char *str)
-{
-	debug_current_mode  = 1; //debug open
-	return 1;
-}
-__setup("androidboot.debugmode=en", get_android_debugmode);
-#endif
-// TQY add end 
 /* Default vendor and product IDs, overridden by userspace */
 #define VENDOR_ID		0x18D1
 #define PRODUCT_ID		0x0001
@@ -1093,6 +1064,32 @@ static struct android_usb_function rmnet_function = {
 	.attributes	= rmnet_function_attributes,
 };
 
+static char gps_transport[MAX_XPORT_STR_LEN];
+
+static ssize_t gps_transport_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%s\n", gps_transport);
+}
+
+static ssize_t gps_transport_store(
+		struct device *device, struct device_attribute *attr,
+		const char *buff, size_t size)
+{
+	strlcpy(gps_transport, buff, sizeof(gps_transport));
+
+	return size;
+}
+
+static struct device_attribute dev_attr_gps_transport =
+					__ATTR(transport, S_IRUGO | S_IWUSR,
+							gps_transport_show,
+							gps_transport_store);
+
+static struct device_attribute *gps_function_attrbitutes[] = {
+					&dev_attr_gps_transport,
+					NULL };
+
 static void gps_function_cleanup(struct android_usb_function *f)
 {
 	gps_cleanup();
@@ -1103,10 +1100,13 @@ static int gps_function_bind_config(struct android_usb_function *f,
 {
 	int err;
 	static int gps_initialized;
+	char buf[MAX_XPORT_STR_LEN], *b;
 
 	if (!gps_initialized) {
+		strlcpy(buf, gps_transport, sizeof(buf));
+		b = strim(buf);
 		gps_initialized = 1;
-		err = gps_init_port();
+		err = gps_init_port(b);
 		if (err) {
 			pr_err("gps: Cannot init gps port");
 			return err;
@@ -1131,6 +1131,7 @@ static struct android_usb_function gps_function = {
 	.name		= "gps",
 	.cleanup	= gps_function_cleanup,
 	.bind_config	= gps_function_bind_config,
+	.attributes	= gps_function_attrbitutes,
 };
 
 /* ncm */
@@ -3584,31 +3585,6 @@ static ssize_t remote_wakeup_store(struct device *pdev,
 	return size;
 }
 
-//TQY
-#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
-static ssize_t usb_mode_show(struct device *pdev,
-                struct device_attribute *attr, char *buf)
-{
-        /*
-         * Show the wakeup attribute of the first configuration,
-         * since all configurations have the same wakeup attribute
-         */
-
-        return snprintf(buf, PAGE_SIZE, "%d\n",usb_current_mode);
-}
-
-static ssize_t mydebug_mode_show(struct device *pdev,
-                struct device_attribute *attr, char *buf)
-{
-        /*
-         * Show the wakeup attribute of the first configuration,
-         * since all configurations have the same wakeup attribute
-         */
-
-        return snprintf(buf, PAGE_SIZE, "%d\n",debug_current_mode);
-}
-#endif//TQY
-
 static ssize_t
 functions_show(struct device *pdev, struct device_attribute *attr, char *buf)
 {
@@ -3769,14 +3745,6 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		 * Update values in composite driver's copy of
 		 * device descriptor.
 		 */
-		 //TQY add start
-#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
-		if(!usb_current_mode){
-			//device_desc.idVendor = USB_USER_VID;
-			printk("now is  user mode, vid and pid must change to custom!!!\n");
-		}
-#endif		
-		//TQY add end
 		cdev->desc.idVendor = device_desc.idVendor;
 		cdev->desc.idProduct = device_desc.idProduct;
 		if (device_desc.bcdDevice)
@@ -3968,10 +3936,7 @@ ANDROID_DEV_ATTR(idle_pc_rpm_no_int_secs, "%u\n");
 static DEVICE_ATTR(state, S_IRUGO, state_show, NULL);
 static DEVICE_ATTR(remote_wakeup, S_IRUGO | S_IWUSR,
 		remote_wakeup_show, remote_wakeup_store);
-#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
-static DEVICE_ATTR(usb_mode, S_IRUGO, usb_mode_show, NULL);//TQY add
-static DEVICE_ATTR(mydebug_mode, S_IRUGO, mydebug_mode_show, NULL);//TQY add
-#endif
+
 static struct device_attribute *android_usb_attributes[] = {
 	&dev_attr_idVendor,
 	&dev_attr_idProduct,
@@ -3993,10 +3958,6 @@ static struct device_attribute *android_usb_attributes[] = {
 	&dev_attr_pm_qos_state,
 	&dev_attr_state,
 	&dev_attr_remote_wakeup,
-#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
-	&dev_attr_usb_mode, //TQY
-	&dev_attr_mydebug_mode, //TQY
-#endif
 	NULL
 };
 

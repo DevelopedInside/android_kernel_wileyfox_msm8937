@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2013-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011, 2013-2017, The Linux Foundation. All rights reserved.
  * Linux Foundation chooses to take subject only to the GPLv2 license terms,
  * and distributes only under these terms.
  *
@@ -888,7 +888,7 @@ static void gbridge_debugfs_init(void) {}
 int gbridge_setup(void *gptr, u8 no_ports)
 {
 	pr_debug("gptr:%pK, no_bridge_ports:%d\n", gptr, no_ports);
-	if (no_ports >= num_of_instance) {
+	if (no_ports > num_of_instance) {
 		pr_err("More ports are requested\n");
 		return -EINVAL;
 	}

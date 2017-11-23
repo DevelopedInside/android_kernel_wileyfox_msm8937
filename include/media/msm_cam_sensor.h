@@ -44,6 +44,7 @@ struct msm_camera_sensor_slave_info32 {
     struct hycit_data_k cam_data;
     /*end*/
 	enum msm_sensor_output_format_t output_format;
+	uint8_t bypass_video_node_creation;
 };
 
 struct msm_camera_csid_lut_params32 {
