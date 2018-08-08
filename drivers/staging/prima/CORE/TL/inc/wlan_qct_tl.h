@@ -328,6 +328,10 @@ typedef struct
   /* Min Threshold for Processing Frames in TL */
   v_U8_t   uMinFramesProcThres;
 
+ /* 1 means replay check enable
+    0 means replay check disable */
+  v_BOOL_t      ucIsReplayCheck;
+
   /* Re-order Aging Time */
   v_U16_t  ucReorderAgingTime[WLANTL_MAX_AC];
 }WLANTL_ConfigInfoType;
@@ -3437,4 +3441,23 @@ void WLANTL_SetARPFWDatapath(void * pvosGCtx, bool flag);
  * Return: void
  */
 void WLANTL_GetSAPStaRSSi(void * pvosGCtx, uint8_t ucSTAId, s8 *rssi);
+
+/**
+ * wlan_tl_get_sta_rx_rate() - get rx rate for the SAP client
+ * @pvosGCtx: global vos context
+ * @ucSTAId: station id to get rssi for
+ *
+ * Return: rx tate
+ */
+v_U16_t wlan_tl_get_sta_rx_rate(void* pvosGCtx, uint8_t ucSTAId);
+
+/**
+ * WLANTL_SetKeySeqCounter() - set sequence key counter
+ * @pvosGCtx: global vos context
+ * @counter: key sequence counter
+ * @staid: station index
+ *
+ * Return: void
+ */
+void WLANTL_SetKeySeqCounter(void *pvosGCtx, u64 counter, uint8_t staid);
 #endif /* #ifndef WLAN_QCT_WLANTL_H */
