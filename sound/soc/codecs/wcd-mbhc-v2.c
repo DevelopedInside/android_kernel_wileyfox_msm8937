@@ -887,7 +887,7 @@ static int wcd_check_cross_conn(struct wcd_mbhc *mbhc)
 	enum wcd_mbhc_plug_type plug_type = MBHC_PLUG_TYPE_NONE;
 	s16 reg1;
 	bool hphl_sch_res, hphr_sch_res;
-
+	return false;
 	if (wcd_swch_level_remove(mbhc)) {
 		pr_debug("%s: Switch level is low\n", __func__);
 		return -EINVAL;
