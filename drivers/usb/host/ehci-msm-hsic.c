@@ -1,6 +1,6 @@
 /* ehci-msm-hsic.c - HSUSB Host Controller Driver Implementation
  *
- * Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
  *
  * Partly derived from ehci-fsl.c and ehci-hcd.c
  * Copyright (c) 2000-2004 by David Brownell
@@ -1066,6 +1066,7 @@ static irqreturn_t msm_hsic_irq(struct usb_hcd *hcd)
 	struct msm_hsic_hcd *mehci = hcd_to_hsic(hcd);
 	u32			status;
 	int			ret;
+	static bool		runtime_pm_enabled;
 
 	if (atomic_read(&mehci->in_lpm)) {
 		dev_dbg(mehci->dev, "phy async intr\n");
@@ -1113,6 +1114,13 @@ static irqreturn_t msm_hsic_irq(struct usb_hcd *hcd)
 
 		complete(&mehci->gpt0_completion);
 		ehci_writel(ehci, STS_GPTIMER0_INTERRUPT, &ehci->regs->status);
+	}
+
+	/* Allow RuntimePM if device connected */
+	if (!runtime_pm_enabled && (readl_relaxed(USB_PORTSC) & PORT_PE)) {
+		pr_debug("enable runtime PM for HSIC rhub\n");
+		pm_runtime_allow(&hcd->self.root_hub->dev);
+		runtime_pm_enabled = true;
 	}
 
 	return ehci_irq(hcd);
@@ -2166,6 +2174,9 @@ static int ehci_hsic_msm_probe(struct platform_device *pdev)
 		goto destroy_wq;
 	}
 
+	/* RuntimePM will be disabled until HSIC device connects */
+	pm_runtime_forbid(&hcd->self.root_hub->dev);
+
 	/* Check whether target uses pinctrl */
 	mehci->hsic_pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR(mehci->hsic_pinctrl)) {
@@ -2317,6 +2328,9 @@ static int ehci_hsic_msm_remove(struct platform_device *pdev)
 
 	/* Remove the HCD prior to releasing our resources. */
 	usb_remove_hcd(hcd);
+
+	/* Disable HSIC mode in HSIC_CFG register */
+	ulpi_write(mehci, 0x0, 0x30);
 
 	if (pdata && pdata->standalone_latency)
 		pm_qos_remove_request(&mehci->pm_qos_req_dma);

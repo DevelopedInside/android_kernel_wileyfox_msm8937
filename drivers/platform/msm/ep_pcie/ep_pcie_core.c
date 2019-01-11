@@ -1037,11 +1037,6 @@ static void ep_pcie_enumeration_complete(struct ep_pcie_dev_t *dev)
 
 	spin_lock_irqsave(&dev->isr_lock, irqsave_flags);
 
-	if (dev->enumerated) {
-		EP_PCIE_DBG(dev, "PCIe V%d: Enumeration already done\n",
-				dev->rev);
-		goto done;
-	}
 	dev->enumerated = true;
 	dev->link_status = EP_PCIE_LINK_ENABLED;
 
@@ -1068,9 +1063,13 @@ static void ep_pcie_enumeration_complete(struct ep_pcie_dev_t *dev)
 		"PCIe V%d: register driver for device 0x%x.\n",
 		ep_pcie_dev.rev, hw_drv.device_id);
 	ep_pcie_register_drv(&hw_drv);
-	ep_pcie_notify_event(dev, EP_PCIE_EVENT_LINKUP);
+	if (!dev->no_notify)
+		ep_pcie_notify_event(dev, EP_PCIE_EVENT_LINKUP);
+	else
+		EP_PCIE_DBG(dev,
+			"PCIe V%d: do not notify client about linkup.\n",
+			dev->rev);
 
-done:
 	spin_unlock_irqrestore(&dev->isr_lock, irqsave_flags);
 
 	return;
@@ -1465,8 +1464,9 @@ static irqreturn_t ep_pcie_handle_bme_irq(int irq, void *data)
 			schedule_work(&dev->handle_bme_work);
 		} else {
 			EP_PCIE_DBG(dev,
-				"PCIe V%d:BME is set again after the enumeration has completed\n",
+				"PCIe V%d:BME is set again after the enumeration has completed; callback client for link ready.\n",
 				dev->rev);
+			ep_pcie_notify_event(dev, EP_PCIE_EVENT_LINKUP);
 		}
 	} else {
 		EP_PCIE_DBG(dev,
@@ -1570,7 +1570,13 @@ static irqreturn_t ep_pcie_handle_dstate_change_irq(int irq, void *data)
 			"PCIe V%d: No. %ld change to D3 state.\n",
 			dev->rev, dev->d3_counter);
 		ep_pcie_write_mask(dev->parf + PCIE20_PARF_PM_CTRL, 0, BIT(1));
-		ep_pcie_notify_event(dev, EP_PCIE_EVENT_PM_D3_HOT);
+
+		if (dev->enumerated)
+			ep_pcie_notify_event(dev, EP_PCIE_EVENT_PM_D3_HOT);
+		else
+			EP_PCIE_DBG(dev,
+				"PCIe V%d: do not notify client about this D3 hot event since enumeration by HLOS is not done yet.\n",
+				dev->rev);
 	} else if (dstate == 0) {
 		dev->l23_ready = false;
 		dev->d0_counter++;
@@ -1634,7 +1640,23 @@ static void handle_perst_func(struct work_struct *work)
 	struct ep_pcie_dev_t *dev = container_of(work, struct ep_pcie_dev_t,
 					handle_perst_work);
 
+	EP_PCIE_DBG(dev,
+		"PCIe V%d: Start enumeration due to PERST deassertion.\n",
+		dev->rev);
+
 	ep_pcie_enumeration(dev);
+}
+
+static void handle_d3cold_func(struct work_struct *work)
+{
+	struct ep_pcie_dev_t *dev = container_of(work, struct ep_pcie_dev_t,
+					handle_d3cold_work);
+
+	EP_PCIE_DBG(dev,
+		"PCIe V%d: shutdown PCIe link due to PERST assertion before BME is set.\n",
+		dev->rev);
+	ep_pcie_core_disable_endpoint();
+	dev->no_notify = false;
 }
 
 static void handle_bme_func(struct work_struct *work)
@@ -1659,10 +1681,14 @@ static irqreturn_t ep_pcie_handle_perst_irq(int irq, void *data)
 		EP_PCIE_DBG(dev,
 			"PCIe V%d: PCIe is not enumerated yet; PERST is %sasserted.\n",
 			dev->rev, perst ? "de" : "");
-		if ((!dev->perst_enum) || !perst)
-			goto out;
-		/* start work for link enumeration with the host side */
-		schedule_work(&dev->handle_perst_work);
+		if (perst) {
+			/* start work for link enumeration with the host side */
+			schedule_work(&dev->handle_perst_work);
+		} else {
+			dev->no_notify = true;
+			/* shutdown the link if the link is already on */
+			schedule_work(&dev->handle_d3cold_work);
+		}
 
 		goto out;
 	}
@@ -1680,7 +1706,16 @@ static irqreturn_t ep_pcie_handle_perst_irq(int irq, void *data)
 		EP_PCIE_DBG(dev,
 			"PCIe V%d: No. %ld PERST assertion.\n",
 			dev->rev, dev->perst_ast_counter);
-		ep_pcie_notify_event(dev, EP_PCIE_EVENT_PM_D3_COLD);
+
+		if (dev->client_ready) {
+			ep_pcie_notify_event(dev, EP_PCIE_EVENT_PM_D3_COLD);
+		} else {
+			dev->no_notify = true;
+			EP_PCIE_DBG(dev,
+				"PCIe V%d: Client driver is not ready when this PERST assertion happens; shutdown link now.\n",
+				dev->rev);
+			schedule_work(&dev->handle_d3cold_work);
+		}
 	}
 
 out:
@@ -1765,6 +1800,7 @@ int32_t ep_pcie_irq_init(struct ep_pcie_dev_t *dev)
 	/* Initialize all works to be performed before registering for IRQs*/
 	INIT_WORK(&dev->handle_perst_work, handle_perst_func);
 	INIT_WORK(&dev->handle_bme_work, handle_bme_func);
+	INIT_WORK(&dev->handle_d3cold_work, handle_d3cold_func);
 
 	if (dev->aggregated_irq) {
 		ret = devm_request_irq(pdev,
@@ -1918,6 +1954,8 @@ int ep_pcie_core_register_event(struct ep_pcie_register_event *reg)
 		"PCIe V%d: Event 0x%x is registered\n",
 		ep_pcie_dev.rev, reg->events);
 
+	ep_pcie_dev.client_ready = true;
+
 	return 0;
 }
 
@@ -1954,6 +1992,12 @@ enum ep_pcie_link_status ep_pcie_core_get_linkstatus(void)
 				"PCIe V%d: PCIe link is up and BME is enabled; current SW link status:%d.\n",
 				dev->rev, dev->link_status);
 			dev->link_status = EP_PCIE_LINK_ENABLED;
+			if (dev->no_notify) {
+				EP_PCIE_DBG(dev,
+					"PCIe V%d: BME is set now, but do not tell client about BME enable.\n",
+					dev->rev);
+				return EP_PCIE_LINK_UP;
+			}
 		} else {
 			EP_PCIE_DBG(dev,
 				"PCIe V%d: PCIe link is up but BME is disabled; current SW link status:%d.\n",
@@ -2531,7 +2575,7 @@ static void __exit ep_pcie_exit(void)
 	platform_driver_unregister(&ep_pcie_driver);
 }
 
-subsys_initcall(ep_pcie_init);
+module_init(ep_pcie_init);
 module_exit(ep_pcie_exit);
 MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("MSM PCIe Endpoint Driver");

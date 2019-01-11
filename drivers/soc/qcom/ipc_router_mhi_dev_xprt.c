@@ -184,8 +184,9 @@ static void mhi_xprt_event_notifier(struct mhi_dev_client_cb_reason *reason)
 static void mhi_xprt_read_data(struct work_struct *work)
 {
 	struct sk_buff *skb;
+	uint32_t buf_size = mhi_xprtp->ch_hndl.max_packet_size;
 	struct mhi_req mreq = {0};
-	int data_sz;
+	size_t data_sz;
 	struct ipc_router_mhi_dev_xprt *mhi_xprtp =
 		container_of(work, struct ipc_router_mhi_dev_xprt, read_work);
 
@@ -201,26 +202,27 @@ static void mhi_xprt_read_data(struct work_struct *work)
 			D("%s: Allocated rr_packet\n", __func__);
 		}
 
-		skb = alloc_skb(mhi_xprtp->ch_hndl.max_packet_size, GFP_KERNEL);
+		skb = alloc_skb(buf_size, GFP_KERNEL);
 		if (!skb) {
 			IPC_RTR_ERR("%s: Could not allocate SKB\n", __func__);
-			goto exit_free_pkt;
+			return;
 		}
 
 		mreq.client = mhi_xprtp->ch_hndl.out_handle;
-		mreq.context = mhi_xprtp;
 		mreq.buf = skb->data;
-		mreq.len = mhi_xprtp->ch_hndl.max_packet_size;
+		mreq.len = buf_size;
 		mreq.chan = mhi_xprtp->ch_hndl.out_chan_id;
 		mreq.mode = IPA_DMA_SYNC;
 		data_sz = mhi_dev_read_channel(&mreq);
 		if (data_sz < 0) {
 			IPC_RTR_ERR("%s: Failed to queue TRB into MHI\n",
 				    __func__);
-			goto exit_free_skb;
+			kfree_skb(skb);
+			release_pkt(mhi_xprtp->in_pkt);
+			return;
 		} else if (!data_sz) {
-			D("%s: No data available\n", __func__);
-			goto exit_free_skb;
+			kfree_skb(skb);
+			break;
 		}
 
 		if (!mhi_xprtp->bytes_to_rx) {
@@ -244,15 +246,6 @@ static void mhi_xprt_read_data(struct work_struct *work)
 			mhi_xprtp->in_pkt = NULL;
 		}
 	}
-
-	return;
-
-exit_free_skb:
-	kfree_skb(skb);
-exit_free_pkt:
-	release_pkt(mhi_xprtp->in_pkt);
-	mhi_xprtp->in_pkt = NULL;
-	mhi_xprtp->bytes_to_rx = 0;
 }
 
 /**

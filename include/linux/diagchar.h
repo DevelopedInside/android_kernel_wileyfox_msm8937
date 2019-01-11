@@ -66,6 +66,7 @@
 #define DIAG_IOCTL_PERIPHERAL_BUF_DRAIN		36
 #define DIAG_IOCTL_REGISTER_CALLBACK	37
 #define DIAG_IOCTL_HDLC_TOGGLE	38
+#define DIAG_IOCTL_QUERY_CON_ALL	40
 
 /* PC Tools IDs */
 #define APQ8060_TOOLS_ID	4062
@@ -144,7 +145,7 @@ the appropriate macros. */
 /* This needs to be modified manually now, when we add
  a new RANGE of SSIDs to the msg_mask_tbl */
 #define MSG_MASK_TBL_CNT		26
-#define APPS_EVENT_LAST_ID		0x0C5A
+#define APPS_EVENT_LAST_ID		0xC7A
 
 #define MSG_SSID_0			0
 #define MSG_SSID_0_LAST			125
@@ -505,7 +506,7 @@ static const uint32_t msg_bld_masks_7[] = {
 	MSG_LVL_LOW,
 	MSG_LVL_LOW,
 	MSG_LVL_LOW,
-	MSG_LVL_LOW | MSG_LVL_MED | MSG_LVL_HIGH | MSG_LVL_ERROR |
+	MSG_LVL_LOW|MSG_LVL_MED|MSG_LVL_HIGH|MSG_LVL_ERROR|
 	MSG_LVL_FATAL,
 	MSG_LVL_LOW
 };

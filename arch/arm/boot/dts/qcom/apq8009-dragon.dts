@@ -21,33 +21,3 @@
 	qcom,msm-id = <265 2>;
 	qcom,board-id= <0x00010020 0>;
 };
-
-&blsp1_uart2_hs {
-	status = "okay";
-};
-
-&i2c_2 {
-	status = "disabled";
-	nq@28 {
-		status = "disabled";
-	};
-};
-
-&mdss_fb0 {
-	status = "disabled";
-	/delete-node/ qcom,cont-splash-memory;
-};
-
-&mdss_mdp {
-	status = "disabled";
-};
-
-&mdss_dsi0_pll {
-	status = "disabled";
-};
-
-&mdss_dsi0 {
-	status = "disabled";
-};
-
-/delete-node/ &cont_splash_mem;

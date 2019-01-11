@@ -411,7 +411,6 @@ int diag_mask_param(void)
 {
 	return diag_mask_clear_param;
 }
-
 void diag_clear_masks(int pid)
 {
 	int ret;
@@ -457,7 +456,6 @@ static void diag_close_logging_process(const int pid)
 	mutex_unlock(&driver->diag_maskclear_mutex);
 
 	mutex_lock(&driver->diagchar_mutex);
-	session_peripheral_mask = session_info->peripheral_mask;
 	for (i = 0; i < NUM_MD_SESSIONS; i++)
 		if (MD_PERIPHERAL_MASK(i) & session_peripheral_mask)
 			diag_mux_close_peripheral(DIAG_LOCAL_PROC, i);
@@ -1255,8 +1253,7 @@ static void diag_md_session_exit(void)
 			diag_log_mask_free(session_info->log_mask);
 			kfree(session_info->log_mask);
 			session_info->log_mask = NULL;
-			diag_msg_mask_free(session_info->msg_mask,
-				session_info);
+			diag_msg_mask_free(session_info->msg_mask);
 			kfree(session_info->msg_mask);
 			session_info->msg_mask = NULL;
 			diag_event_mask_free(session_info->event_mask);
@@ -1329,9 +1326,7 @@ int diag_md_session_create(int mode, int peripheral_mask, int proc)
 			 "return value of event copy. err %d\n", err);
 		goto fail_peripheral;
 	}
-	new_session->msg_mask_tbl_count = 0;
-	err = diag_msg_mask_copy(new_session, new_session->msg_mask,
-		&msg_mask);
+	err = diag_msg_mask_copy(new_session->msg_mask, &msg_mask);
 	if (err) {
 		DIAG_LOG(DIAG_DEBUG_USERSPACE,
 			 "return value of msg copy. err %d\n", err);
@@ -1367,8 +1362,7 @@ fail_peripheral:
 	diag_event_mask_free(new_session->event_mask);
 	kfree(new_session->event_mask);
 	new_session->event_mask = NULL;
-	diag_msg_mask_free(new_session->msg_mask,
-		new_session);
+	diag_msg_mask_free(new_session->msg_mask);
 	kfree(new_session->msg_mask);
 	new_session->msg_mask = NULL;
 	kfree(new_session);
@@ -1396,8 +1390,7 @@ static void diag_md_session_close(int pid)
 	diag_log_mask_free(session_info->log_mask);
 	kfree(session_info->log_mask);
 	session_info->log_mask = NULL;
-	diag_msg_mask_free(session_info->msg_mask,
-		session_info);
+	diag_msg_mask_free(session_info->msg_mask);
 	kfree(session_info->msg_mask);
 	session_info->msg_mask = NULL;
 	diag_event_mask_free(session_info->event_mask);
@@ -2106,6 +2099,7 @@ long diagchar_compat_ioctl(struct file *filp,
 	uint16_t remote_dev;
 	struct diag_dci_client_tbl *dci_client = NULL;
 	struct diag_logging_mode_param_t mode_param;
+	struct diag_con_all_param_t con_param;
 
 	switch (iocmd) {
 	case DIAG_IOCTL_COMMAND_REG:
@@ -2217,6 +2211,15 @@ long diagchar_compat_ioctl(struct file *filp,
 	case DIAG_IOCTL_HDLC_TOGGLE:
 		result = diag_ioctl_hdlc_toggle(ioarg);
 		break;
+	case DIAG_IOCTL_QUERY_CON_ALL:
+		con_param.diag_con_all = DIAG_CON_ALL;
+		con_param.num_peripherals = NUM_PERIPHERALS;
+		if (copy_to_user((void __user *)ioarg, &con_param,
+				sizeof(struct diag_con_all_param_t)))
+			result = -EFAULT;
+		else
+			result = 0;
+		break;
 	}
 	return result;
 }
@@ -2231,6 +2234,7 @@ long diagchar_ioctl(struct file *filp,
 	uint16_t remote_dev;
 	struct diag_dci_client_tbl *dci_client = NULL;
 	struct diag_logging_mode_param_t mode_param;
+	struct diag_con_all_param_t con_param;
 
 	switch (iocmd) {
 	case DIAG_IOCTL_COMMAND_REG:
@@ -2341,6 +2345,15 @@ long diagchar_ioctl(struct file *filp,
 		break;
 	case DIAG_IOCTL_HDLC_TOGGLE:
 		result = diag_ioctl_hdlc_toggle(ioarg);
+		break;
+	case DIAG_IOCTL_QUERY_CON_ALL:
+		con_param.diag_con_all = DIAG_CON_ALL;
+		con_param.num_peripherals = NUM_PERIPHERALS;
+		if (copy_to_user((void __user *)ioarg, &con_param,
+				sizeof(struct diag_con_all_param_t)))
+			result = -EFAULT;
+		else
+			result = 0;
 		break;
 	}
 	return result;
@@ -2843,13 +2856,13 @@ static int diag_user_process_apps_data(const char __user *buf, int len,
 	else
 		hdlc_disabled = driver->hdlc_disabled;
 	mutex_unlock(&driver->md_session_lock);
-	mutex_unlock(&driver->hdlc_disable_mutex);
 	if (hdlc_disabled)
 		ret = diag_process_apps_data_non_hdlc(user_space_data, len,
 						      pkt_type);
 	else
 		ret = diag_process_apps_data_hdlc(user_space_data, len,
 						  pkt_type);
+	mutex_unlock(&driver->hdlc_disable_mutex);
 	mutex_unlock(&apps_data_mutex);
 
 	diagmem_free(driver, user_space_data, mempool);

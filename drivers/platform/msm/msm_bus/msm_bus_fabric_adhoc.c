@@ -1045,7 +1045,6 @@ static struct device *msm_bus_device_init(
 	device_create_file(bus_dev, &dev_attr_bw);
 	INIT_LIST_HEAD(&bus_node->devlist);
 	return bus_dev;
-
 err_put_device:
 	put_device(bus_dev);
 	bus_dev = NULL;

@@ -938,8 +938,11 @@ int diag_process_apps_pkt(unsigned char *buf, int len, int pid)
 		} else {
 			mutex_unlock(&driver->md_session_lock);
 			if (MD_PERIPHERAL_MASK(reg_item->proc) &
-				driver->logging_mask)
+				driver->logging_mask) {
+				mutex_unlock(&driver->cmd_reg_mutex);
 				diag_send_error_rsp(buf, len);
+				return write_len;
+			}
 			else
 				write_len = diag_send_data(reg_item, buf, len);
 		}
@@ -1298,7 +1301,6 @@ static uint8_t hdlc_reset;
 static void hdlc_reset_timer_start(int pid)
 {
 	struct diag_md_session_t *info = NULL;
-
 	mutex_lock(&driver->md_session_lock);
 	info = diag_md_session_get_pid(pid);
 	if (!hdlc_timer_in_progress) {
