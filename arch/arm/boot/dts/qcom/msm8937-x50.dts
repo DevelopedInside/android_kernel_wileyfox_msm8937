@@ -59,6 +59,14 @@
 	usb_otg: usb@78db000 {
 		qcom,floated-charger-enable = <1>;
 	};
+	
+	qcom,msm-imem@8600000 {
+		/delete-node/ dload_type@1c;
+		dload_type@18 {
+			compatible = "qcom,msm-imem-dload-type";
+			reg = <0x18 4>;
+		};
+	};
 
 	int_codec: sound {
 		status = "okay";
