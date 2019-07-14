@@ -171,7 +171,7 @@ static void gf_enable_irq(gf_dev_t* gf_dev)
 	if(g_irq_enabled) {
 		printk(KERN_ERR "%s irq has been enabled.\n",__func__);
 	} else {
-		enable_irq(gf_dev->irq);
+		enable_irq_wake(gf_dev->irq);
 		g_irq_enabled = 1;
 	}
 }
@@ -180,7 +180,7 @@ static void gf_disable_irq(gf_dev_t* gf_dev)
 {
 	if(g_irq_enabled) {
 		g_irq_enabled = 0;
-		disable_irq(gf_dev->irq);
+		disable_irq_wake(gf_dev->irq);
 	} else {
 		printk(KERN_ERR "%s irq has been disabled.\n",__func__);
 	}
