@@ -1,0 +1,12 @@
+menuconfig TOUCHSCREEN_ILITEK_2120
+	bool "Ilitek touchscreen"
+	default n
+	help
+	  Say Y here if you have a Ilitek touchscreen connected
+	  to your system.
+	  
+	  If unsure, say N
+
+if TOUCHSCREEN_ILITEK_2120
+
+endif
