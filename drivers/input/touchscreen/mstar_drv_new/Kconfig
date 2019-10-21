@@ -1,0 +1,144 @@
+#
+# Mstar touchscreen driver configuration
+#
+menuconfig TOUCHSCREEN_MSTAR
+	bool "Mstar touchscreen"
+	default n
+	help
+	  Say Y here if you have a Mstar touchscreen connected
+	  to your system.
+
+	  If unsure, say N.
+
+if TOUCHSCREEN_MSTAR
+
+config TOUCHSCREEN_MSTAR_DRV
+        bool "Mstar touchscreen"
+        default y
+        help
+          Say Y here if you have a Mstar touchscreen connected
+          to your system.
+
+          If unsure, say N.
+
+config TOUCHSCREEN_MSTAR_FW_UPDATE
+	tristate "Mstar touchscreen firmware update module"
+	depends on TOUCHSCREEN_MSTAR_DRV
+	help
+	  Say Y here to enable support for carrying out firmware update.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called mstar_fw_update.
+
+config TOUCHSCREEN_MSTAR_PROXIMITY
+	tristate "Mstar touchscreen proximity module"
+	depends on TOUCHSCREEN_MSTAR_DRV
+	help
+	  Say Y here to enable support for proximity functionalities.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called mstar_proximity.
+
+config ENABLE_CHIP_MSG22XX
+        bool "ctp ic type"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you use ctp msg22xx.
+
+          If unsure, say N.
+
+config ENABLE_CHIP_MSG26XXM
+        bool "ctp ic type"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you use ctp msg26xxm.
+
+          If unsure, say N.
+
+config ENABLE_ITO_MP_TEST
+        tristate "Mstar touchscreen ito test module"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here to enable support for ito test functionalities.
+
+          If unsure, say N.
+
+          To compile this driver as a module, choose M here: the
+          module will be called mstar_ito_test.
+
+config CTP_ITO_TEST_FOR_X22_5261
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X26_5263
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X26_5360
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X26_P308L
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X26_P318L
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X23_P350M
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X26_P536L
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X28_P530M
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+
+config CTP_ITO_TEST_FOR_X37_G151
+        bool "ctp ito test"
+        depends on TOUCHSCREEN_MSTAR_DRV
+        help
+          Say Y here if you need ctp ito test.
+
+          If unsure, say N.
+endif

@@ -547,6 +547,18 @@ config TOUCHSCREEN_EDT_FT5X06
 	  To compile this driver as a module, choose M here: the
 	  module will be called edt-ft5x06.
 
+config TOUCHSCREEN_MSTAR
+        bool "Mstar touchpanel series"
+        depends on I2C
+        help
+          Say Y here if you have a Mstar touchscreen.
+          Mstar controllers are multi touch controllers which can
+          report 2 or 5 touches at a time.
+
+          If unsure, say N.
+
+source "drivers/input/touchscreen/mstar_drv_new/Kconfig"
+
 config TOUCHSCREEN_ILITEK_2120
         bool "Ilitek touchpanel series"
         depends on I2C
