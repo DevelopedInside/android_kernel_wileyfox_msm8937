@@ -43,6 +43,8 @@
 #include <linux/ktime.h>
 #include <linux/extcon.h>
 #include <linux/pmic-voter.h>
+#include "../../../input/touchscreen/mstar_drv_new/mstar_drv_extern.h"
+extern bool is_msg28xx;
 
 /* Mask/Bit helpers */
 #define _SMB_MASK(BITS, POS) \
@@ -6662,6 +6664,17 @@ static irqreturn_t src_detect_handler(int irq, void *_chip)
 		complete_all(&chip->src_det_raised);
 	else
 		complete_all(&chip->src_det_lowered);
+	if(is_msg28xx)
+	{
+		if(usb_present)
+		{
+			DrvFwCtrlChargerDetection(1);
+		}
+		else
+		{
+			DrvFwCtrlChargerDetection(0);
+		}
+	}
 
 	if (chip->hvdcp_3_det_ignore_uv)
 		goto out;
