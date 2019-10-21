@@ -8,6 +8,9 @@
 obj-y				+= irqchip/
 obj-y				+= bus/
 
+#for fingerprint
+obj-y				+= gf/
+
 obj-$(CONFIG_GENERIC_PHY)	+= phy/
 
 # GPIO must come after pinctrl as gpios may need to mux pins etc
