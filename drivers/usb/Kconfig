@@ -137,6 +137,11 @@ config USB_USS720
 	  To compile this driver as a module, choose M here: the
 	  module will be called uss720.
 
+#TQY add for usb
+config USB_SUPPORT_USER_MODE_CHANGE
+	bool "USB user mode change support"
+	default n
+	
 source "drivers/usb/serial/Kconfig"
 
 source "drivers/usb/misc/Kconfig"

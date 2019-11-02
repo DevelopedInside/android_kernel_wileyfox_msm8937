@@ -232,7 +232,10 @@ static const char fsg_string_interface[] = "Mass Storage";
 
 #include "storage_common.h"
 #include "f_mass_storage.h"
-
+#define MAC_CDROM_SUPPORT// modify for mac TQY
+#ifdef CONFIG_USB_SUPPORT_USER_MODE_CHANGE
+#include <linux/usb/usb_custom_cfg.h>//TQY add
+#endif
 /* Static strings, in UTF-8 (for simplicity we use only ASCII characters) */
 static struct usb_string		fsg_strings[] = {
 	{FSG_STRING_INTERFACE,		fsg_string_interface},
@@ -1334,7 +1337,7 @@ static int do_read_header(struct fsg_common *common, struct fsg_buffhd *bh)
 	store_cdrom_address(&buf[4], msf, lba);
 	return 8;
 }
-
+#ifndef MAC_CDROM_SUPPORT  //Modified by ynn for mac cd-rom issue ynn TQY
 static int do_read_toc(struct fsg_common *common, struct fsg_buffhd *bh)
 {
 	struct fsg_lun	*curlun = common->curlun;
@@ -1361,6 +1364,50 @@ static int do_read_toc(struct fsg_common *common, struct fsg_buffhd *bh)
 	store_cdrom_address(&buf[16], msf, curlun->num_sectors);
 	return 20;
 }
+#else
+static int do_read_toc(struct fsg_common *common, struct fsg_buffhd *bh)
+{
+	struct fsg_lun	*curlun = common->curlun;
+	int		msf = common->cmnd[1] & 0x02;
+	int		start_track = common->cmnd[6];
+	u8		*buf = (u8 *)bh->buf;
+	/*len 254*/
+	static const u8	tocdata[] = {
+		0x00, 0x2E, 0x01, 0x01, 0x01, 0x14, 0x00, 0xA0, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x14, 0x00, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 
+		0x01, 0x14, 0x00, 0xA2, 0x00, 0x00, 0x00, 0x00, 0x0B, 0x04, 0x0E, 0x01, 0x14, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x12, 0x01, 0x01, 
+		0x00, 0x14, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x24, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0xBB, 0x3E, 0x00, 0x00, 0x00, 0x84, 0xA7, 0xF6, 0x00, 0x98, 0xA7, 0xF6, 0x00, 0xAC, 0xA7, 0xF6, 0x00, 0xC0, 0xA7, 0xF6, 0x00, 0xD4, 0xA7, 0xF6, 0x00, 
+		0x12, 0x00, 0x12, 0x00, 0x12, 0x00, 0x12, 0x00, 0x12, 0x00, 0x34, 0x35, 0x33, 0x32, 0x33, 0x32, 0x33, 0x38, 0x00, 0x00, 0xF0, 0x00, 0x05, 0x00, 0x00, 0x00, 
+		0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 
+		0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x3A, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x70, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x00, 0x03, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x1F, 0xDC, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x9C, 0xA9, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA4, 0xA9, 0xB4, 0x00, 0x08, 0x00};
+
+	if (start_track > 1) {
+		curlun->sense_data = SS_INVALID_FIELD_IN_CDB;
+		return -EINVAL;
+	}
+
+	if (msf)/* MSF */{
+		memcpy(buf, tocdata, 254);
+		return 254;
+	} else {
+		memset(buf, 0, 20);
+		buf[1] = (20-2);		/* TOC data length */
+		buf[2] = 1;			/* First track number */
+		buf[3] = 1;			/* Last track number */
+		buf[5] = 0x16;			/* Data track, copying allowed */
+		buf[6] = 0x01;			/* Only track is number 1 */
+		store_cdrom_address(&buf[8], msf, 0);
+
+		buf[13] = 0x16;			/* Lead-out track is data */
+		buf[14] = 0xAA;			/* Lead-out track number */
+		store_cdrom_address(&buf[16], msf, curlun->num_sectors);
+		return 20;
+	}
+}
+#endif //TQY
 
 static int do_mode_sense(struct fsg_common *common, struct fsg_buffhd *bh)
 {
@@ -1694,10 +1741,24 @@ static int finish_reply(struct fsg_common *common)
 		/* If there's no residue, simply send the last buffer */
 		} else if (common->residue == 0) {
 			bh->inreq->zero = 0;
+#ifdef MAC_CDROM_SUPPORT //TQY
+			/*ynn add for mac cd-rom issue stall in endpoint*/
+			if(0 == bh->inreq->length) { // ynn
+				rc = halt_bulk_in_endpoint(common->fsg);
+				bh->inreq_busy = 0;
+				bh->state = BUF_STATE_EMPTY;
+				rc = 0;
+			} else {
+			/*add end*/
+				if (!start_in_transfer(common, bh))
+					return -EIO;
+				common->next_buffhd_to_fill = bh->next;
+          }
+#else
 			if (!start_in_transfer(common, bh))
 				return -EIO;
 			common->next_buffhd_to_fill = bh->next;
-
+#endif
 		/*
 		 * For Bulk-only, mark the end of the data with a short
 		 * packet.  If we are allowed to stall, halt the bulk-in
@@ -1707,11 +1768,31 @@ static int finish_reply(struct fsg_common *common)
 		 */
 		} else {
 			bh->inreq->zero = 1;
+#ifdef MAC_CDROM_SUPPORT //TQY
+			/*ynn add for mac cd-rom issue stall in endpoint*/
+			//myprintk("bh->inreq->length=0x%x\n",bh->inreq->length);
+			if (0 == bh->inreq->length) {  //ynn
+				rc = halt_bulk_in_endpoint(common->fsg);
+				bh->inreq_busy = 0;
+				bh->state = BUF_STATE_EMPTY;
+			          rc = 0;
+			}
+			else {
+			//add end
+				if (!start_in_transfer(common, bh))
+					rc = -EIO;
+				common->next_buffhd_to_fill = bh->next;
+				//myprintk("common->can_stall=0x%x\n",common->can_stall);
+				if (common->can_stall)
+					rc = halt_bulk_in_endpoint(common->fsg);
+			}
+#else
 			if (!start_in_transfer(common, bh))
 				rc = -EIO;
 			common->next_buffhd_to_fill = bh->next;
 			if (common->can_stall)
 				rc = halt_bulk_in_endpoint(common->fsg);
+#endif
 		}
 		break;
 
@@ -2004,6 +2085,16 @@ static int do_scsi_command(struct fsg_common *common)
 	down_read(&common->filesem);	/* We're using the backing file */
 	switch (common->cmnd[0]) {
 
+#ifdef MAC_CDROM_SUPPORT //ynn add for mac cd-rom issue ynn TQY
+	case SET_CD_SPEED:
+			 // myprintk("SET_CD_SPEED");
+			  common->data_size_from_cmnd = 0;
+			  reply = check_command(common, 0x6, DATA_DIR_NONE,
+							(0xf<<1), 0,
+							"SET_CD_SPEED");
+			  reply = 0;
+			  break;
+#endif
 	case INQUIRY:
 		common->data_size_from_cmnd = common->cmnd[4];
 		reply = check_command(common, 6, DATA_DIR_TO_HOST,
@@ -2119,9 +2210,15 @@ static int do_scsi_command(struct fsg_common *common)
 			goto unknown_cmnd;
 		common->data_size_from_cmnd =
 			get_unaligned_be16(&common->cmnd[7]);
+#ifdef MAC_CDROM_SUPPORT //TQY
+		reply = check_command(common, 10, DATA_DIR_TO_HOST,
+				      /*ynn ynn modified for mac cd-rom issue (7<<6)*/(0x1f<<6) | (1<<1), 1,
+				      "READ TOC");
+#else
 		reply = check_command(common, 10, DATA_DIR_TO_HOST,
 				      (7<<6) | (1<<1), 1,
 				      "READ TOC");
+#endif
 		if (reply == 0)
 			reply = do_read_toc(common, bh);
 		break;
