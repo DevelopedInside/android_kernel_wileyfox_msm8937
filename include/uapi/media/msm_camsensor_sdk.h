@@ -287,6 +287,13 @@ struct msm_sensor_id_info_t {
 	unsigned short sensor_id_mask;
 };
 
+/*Add for CIT sensor module info by liulihao*/
+struct hycit_data_k{
+	char sensor_ic_name[32];
+	char sensor_module_name[32];
+};
+/*end*/
+
 struct msm_camera_sensor_slave_info {
 	char sensor_name[32];
 	char eeprom_name[32];
@@ -301,6 +308,9 @@ struct msm_camera_sensor_slave_info {
 	struct msm_sensor_power_setting_array power_setting_array;
 	unsigned char  is_init_params_valid;
 	struct msm_sensor_init_params sensor_init_params;
+	/*Add for CIT sensor module info by liulihao*/
+	struct hycit_data_k cam_data;
+	/*end*/
 	enum msm_sensor_output_format_t output_format;
 	uint8_t bypass_video_node_creation;
 };
