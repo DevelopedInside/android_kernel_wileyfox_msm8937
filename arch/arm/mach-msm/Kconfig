@@ -127,6 +127,10 @@ config ARCH_MSM8916
 	select MSM_RPM_SMD
 	select MSM_JTAGV8 if CORESIGHT_ETMV4
 	select ARCH_WANT_KMAP_ATOMIC_FLUSH
+config HY_PROJECT
+       string "Default project names"
+       help
+       Hymost project name.
 
 config ARCH_MSM8937
 	bool "MSM8937"
