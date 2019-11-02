@@ -45,6 +45,7 @@
 #define SCM_EDLOAD_MODE			0X01
 #define SCM_DLOAD_CMD			0x10
 
+#define USER_TEST_MODE_SWITCH // modify for mode switch when poweroff charger
 
 static int restart_mode;
 static void *restart_reason;
@@ -337,6 +338,17 @@ static void msm_restart_prepare(const char *cmd)
 					     restart_reason);
 		} else if (!strncmp(cmd, "edl", 3)) {
 			enable_emergency_dload_mode();
+#ifdef USER_TEST_MODE_SWITCH  //TQY
+		} else if (!strncmp(cmd, "userswitch", 10)) {
+			//printk("userswitch ynn!!!!\n");
+			__raw_writel(0x77665506, restart_reason);
+		}else if (!strncmp(cmd, "testswitch", 10)) {
+			//printk("testswitch!!!!!\n");
+			__raw_writel(0x77665507, restart_reason);
+		}else if (!strncmp(cmd, "debugswitch", 11)) {
+			//printk("debugswitch!!!!!\n");
+			__raw_writel(0x88776606, restart_reason);
+#endif		 
 		} else {
 			__raw_writel(0x77665501, restart_reason);
 		}
