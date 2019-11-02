@@ -2,6 +2,7 @@
 # Makefile for misc devices that really don't fit anywhere else.
 #
 
+obj-$(CONFIG_HY_DRV_ASSIST)     += hy-assist.o
 obj-$(CONFIG_AUDIO_PA_87319)     += aw87319_audio.o
 obj-$(CONFIG_IBM_ASM)		+= ibmasm/
 obj-$(CONFIG_AD525X_DPOT)	+= ad525x_dpot.o

@@ -613,6 +613,12 @@ config MEMORY_STATE_TIME
 	help
 	  Memory time statistics exported to /sys/kernel/memory_state_time
 
+config HY_DRV_ASSIST
+	bool "hymost drivers assist"
+	default y
+	help
+	  hymost. help get information of different device with the same path
+
 config AUDIO_PA_87319
         tristate "audio PA support for AW87319"
         depends on I2C
