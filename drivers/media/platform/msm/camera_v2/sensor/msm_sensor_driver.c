@@ -17,6 +17,7 @@
 #include "camera.h"
 #include "msm_cci.h"
 #include "msm_camera_dt_util.h"
+#include <media/hy_camera.h>
 
 /* Logging macro */
 #undef CDBG
@@ -759,8 +760,11 @@ int32_t msm_sensor_driver_probe(void *setting,
 			slave_info32->output_format;
 		slave_info->bypass_video_node_creation =
 			!!slave_info32->bypass_video_node_creation;
+		/*Add for CIT sensor module info by liulihao*/
+		slave_info->cam_data = slave_info32->cam_data;
+
 		kfree(slave_info32);
-	} else
+	}else
 #endif
 	{
 		if (copy_from_user(slave_info,
@@ -971,6 +975,17 @@ CSID_TG:
 
 	s_ctrl->bypass_video_node_creation =
 		slave_info->bypass_video_node_creation;
+
+
+	/*
+	 * Add for Huiye CIT by liulihao
+	 * Create camera information device node in /sys/class/camera
+	 */
+	if (0 == slave_info->sensor_init_params.position)
+		rear_cam_register_attr(slave_info->cam_data,true);
+	else{
+		front_cam_register_attr(slave_info->cam_data,true);
+	}
 
 	/*
 	 * Update the subdevice id of flash-src based on availability in kernel.

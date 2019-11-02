@@ -40,6 +40,9 @@ struct msm_camera_sensor_slave_info32 {
 	struct msm_sensor_power_setting_array32 power_setting_array;
 	uint8_t  is_init_params_valid;
 	struct msm_sensor_init_params sensor_init_params;
+    /*Add for CIT sensor module info by liulihao*/
+    struct hycit_data_k cam_data;
+    /*end*/
 	enum msm_sensor_output_format_t output_format;
 	uint8_t bypass_video_node_creation;
 };
