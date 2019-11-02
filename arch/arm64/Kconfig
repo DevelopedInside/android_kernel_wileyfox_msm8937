@@ -799,6 +799,12 @@ config FORCE_MAX_ZONEORDER
 	int
 	default "14" if (ARM64_64K_PAGES && TRANSPARENT_HUGEPAGE)
 	default "11"
+#TQY
+config ARCH_MSM8937_X50
+	bool "hy msm8937_x50 usb"
+	depends on ARCH_MSM8937
+	help
+	   hy project x50 pcb
 
 config UNMAP_KERNEL_AT_EL0
 	bool "Unmap kernel when running in userspace (aka \"KAISER\")" if EXPERT
