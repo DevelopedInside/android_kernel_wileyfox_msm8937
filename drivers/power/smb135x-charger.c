@@ -2055,6 +2055,28 @@ static int smb135x_parallel_get_property(struct power_supply *psy,
 	return 0;
 }
 
+static int smb135x_notify_usb_supply_type(struct smb135x_chg *chip,
+					enum power_supply_type type)
+{
+	int rc;
+	union power_supply_propval pval = {0, };
+
+	pval.intval = type;
+	rc = chip->usb_psy->set_property(chip->usb_psy,
+			POWER_SUPPLY_PROP_REAL_TYPE, &pval);
+	if (rc < 0) {
+		if (rc == -EINVAL) {
+			rc = chip->usb_psy->set_property(chip->usb_psy,
+					POWER_SUPPLY_PROP_TYPE, &pval);
+			if (!rc)
+				return 0;
+		}
+		pr_err("notify charger type to usb_psy failed, rc=%d\n", rc);
+	}
+
+	return rc;
+}
+
 static void smb135x_external_power_changed(struct power_supply *psy)
 {
 	struct smb135x_chg *chip = container_of(psy,
@@ -2731,7 +2753,7 @@ static int handle_usb_removal(struct smb135x_chg *chip)
 		smb135x_relax(chip);
 		pr_debug("setting usb psy type = %d\n",
 				POWER_SUPPLY_TYPE_UNKNOWN);
-		power_supply_set_supply_type(chip->usb_psy,
+		smb135x_notify_usb_supply_type(chip,
 				POWER_SUPPLY_TYPE_UNKNOWN);
 		pr_debug("setting usb psy present = %d\n", chip->usb_present);
 		power_supply_set_present(chip->usb_psy, chip->usb_present);
@@ -2785,7 +2807,7 @@ static void smb135x_hvdcp_det_work(struct work_struct *work)
 
 	if (reg) {
 		pr_debug("HVDCP detected; notifying USB PSY\n");
-		power_supply_set_supply_type(chip->usb_psy,
+		smb135x_notify_usb_supply_type(chip,
 			POWER_SUPPLY_TYPE_USB_HVDCP);
 	}
 end:
@@ -2854,7 +2876,7 @@ static int handle_usb_insertion(struct smb135x_chg *chip)
 						rc);
 		}
 		pr_debug("setting usb psy type = %d\n", usb_supply_type);
-		power_supply_set_supply_type(chip->usb_psy, usb_supply_type);
+		smb135x_notify_usb_supply_type(chip, usb_supply_type);
 		pr_debug("setting usb psy present = %d\n", chip->usb_present);
 		power_supply_set_present(chip->usb_psy, chip->usb_present);
 	}
