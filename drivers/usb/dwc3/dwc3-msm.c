@@ -2634,15 +2634,10 @@ static int dwc3_msm_power_set_property_usb(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_REAL_TYPE:
 		mdwc->usb_supply_type = val->intval;
 		/*
-		 * Update TYPE property to DCP for HVDCP/HVDCP3 charger types
-		 * so that they can be recongized as AC chargers by healthd.
 		 * Don't report UNKNOWN charger type to prevent healthd missing
 		 * detecting this power_supply status change.
 		 */
-		if (mdwc->usb_supply_type == POWER_SUPPLY_TYPE_USB_HVDCP_3
-			|| mdwc->usb_supply_type == POWER_SUPPLY_TYPE_USB_HVDCP)
-			psy->type = POWER_SUPPLY_TYPE_USB_DCP;
-		else if (mdwc->usb_supply_type == POWER_SUPPLY_TYPE_UNKNOWN)
+		if (mdwc->usb_supply_type == POWER_SUPPLY_TYPE_UNKNOWN)
 			psy->type = POWER_SUPPLY_TYPE_USB;
 		else
 			psy->type = mdwc->usb_supply_type;
