@@ -1,0 +1,51 @@
+
+qcom,vk2700mah_hy{
+
+	qcom,max-voltage-uv = <4400000>;
+	qcom,fg-cc-cv-threshold-mv=<4390>;
+	qcom,nom-batt-capacity-mah = <2700>;
+	qcom,batt-id-kohm = <22>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-type = "vk2700mah_hy";
+	qcom,chg-rslow-comp-c1 = <2648587>;
+	qcom,chg-rslow-comp-c2 = <2829130>;
+	qcom,chg-rs-to-rslow = <1025113>;
+	qcom,chg-rslow-comp-thr = <0x99>;
+	qcom,checksum = <0xDCCF>;
+	qcom,gui-version = "PMI8950GUI - 2.0.0.16";
+	qcom,fg-profile-data = [
+		 D1 83 0A 7C 
+		 27 80 49 75 
+		 4F 83 B1 59 
+		 16 81 1A 8D 
+		 76 82 C6 93 
+		 A2 B5 7B C1 
+		 56 17 F1 83 
+		 A9 7C 80 80 
+		 CB 75 4D 83 
+		 F8 70 5D 59 
+		 87 7E 58 82 
+		 7B 99 CB BC 
+		 A8 C9 59 0D 
+		 2C 0B CD 5A 
+		 CE 6E ED FD 
+		 87 3D B7 44 
+		 CA 41 00 00 
+		 B9 4C A9 33 
+		 27 40 00 00 
+		 00 00 00 00 
+		 00 00 00 00 
+		 51 70 A2 6A 
+		 6B 5D 9D 81 
+		 2B 75 B4 68 
+		 32 57 FB 7B 
+		 37 74 AF 62 
+		 49 84 71 B1 
+		 17 A0 62 17 
+		 64 A0 71 0C 
+		 28 00 FF 36 
+		 F0 11 30 03 
+		 00 00 00 0C 
+	];
+};
+

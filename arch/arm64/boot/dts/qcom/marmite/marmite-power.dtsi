@@ -1,0 +1,83 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+*  Copyright (c) 2020, Jebaitedneko.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License version 2 and
+* only version 2 as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*/
+
+&spmi_bus {
+
+	qcom,pmi8950@2 {
+		 pmi8950_charger: qcom,qpnp-smbcharger {
+			 qcom,iterm-ma = <200>;
+			 qcom,float-voltage-mv = <4400>;
+			 qcom,thermal-mitigation = <1500 1200 900 0>;
+			 qcom,enable-hvdcp-9v;//TQY
+			 qcom,fastchg-current-ma=<2500>;
+			 qcom,override-usb-current;
+
+			 qcom,float-voltage-comp=<0x8>;
+			 qcom,fastchg-current-comp=<700>;
+
+		};
+		pmi8950_fg: qcom,fg {
+			 qcom,resume-soc = <95>;
+			 qcom,fg-iterm-ma = <250>;
+			 qcom,fg-chg-iterm-ma = <200>;
+			 qcom,fg-cutoff-voltage-mv = <3500>;
+			 qcom,fg-cc-cv-threshold-mv=<4390>;
+			 qcom,ext-sense-type;//TQY
+			 qcom,warm-bat-decidegc=<480>;
+			 qcom,hot-bat-decidegc=<550>;
+			 qcom,cold-bat-decidegc=<(-40)>;
+			 qcom,thermal-coefficients=[C8 86 C1 50 D3 37];
+		};
+	};
+
+	qcom,pmi8950@3 {
+                wled: qcom,leds@d800 {
+			 qcom,fs-curr-ua = <22500>;//TQY
+		};
+
+	};
+};
+
+&rpm_bus {
+	rpm-regulator-ldoa6 {
+	        pm8937_l6: regulator-l6 {
+			regulator-always-on;
+		};
+	};
+	rpm-regulator-ldoa10 {
+	        pm8937_l10: regulator-l10 {
+			regulator-always-on;
+		};
+	};
+	rpm-regulator-ldoa17 {
+	        pm8937_l17: regulator-l17 {
+			regulator-always-on;
+		};
+	};
+
+};
+
+&pmi8950_charger {
+	/delete-property/qcom,chg-led-support;
+};
+
+&pmi_haptic {
+	qcom,actuator-type = <1>;
+	qcom,wave-play-rate-us = <5263>;
+	qcom,vmax-mv = <3200>;
+	/delete-property/qcom,correct-lra-drive-freq;
+	/delete-property/qcom,lra-auto-res-mode;
+	/delete-property/qcom,lra-high-z;
+	/delete-property/qcom,lra-res-cal-period;
+	/delete-property/qcom,misc-trim-error-rc19p2-clk-reg-present;
+};

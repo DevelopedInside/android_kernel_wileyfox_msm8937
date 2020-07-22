@@ -1,0 +1,78 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+*  Copyright (c) 2020, Jebaitedneko.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License version 2 and
+* only version 2 as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*/
+
+&mdss_mdp {
+	/delete-property/qcom,mdss-pipe-cursor-off;
+	/delete-property/qcom,mdss-pipe-cursor-xin-id;
+	/delete-property/qcom,mdss-pipe-cursor-clk-ctrl-offsets;
+};
+
+#include "dsi-panel-ili9881c-720p-hsd-5in-helitai-video.dtsi"
+#include "dsi-panel-ili9881c-720p-inno-5in-helitai-video.dtsi"
+#include "dsi-panel-novatek-1080p-jdi-helitai-video.dtsi"
+#include "dsi-panel-ili9881c-720p-boe-huashi-video.dtsi"
+
+&mdss_dsi0 {
+	/delete-property/qcom,platform-bklight-en-gpio;
+	qcom,dsi-pref-prim-pan = <&dsi_ili9881c_720p_hsd_5in_helitai_video>;
+};
+
+&mdss_dsi1 {
+	/delete-property/status;
+	/delete-property/qcom,dsi-pref-prim-pan;
+	/delete-property/pinctrl-names;
+	/delete-property/pinctrl-0;
+	/delete-property/pinctrl-1;
+	/delete-property/qcom,platform-te-gpio;
+	/delete-property/qcom,platform-enable-gpio;
+	/delete-property/qcom,platform-reset-gpio;
+	/delete-property/qcom,platform-bklight-en-gpio;
+};
+
+
+&dsi_truly_1080_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-pan-enable-dynamic-fps;
+	qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
+};
+ 
+&dsi_ili9881c_720p_hsd_5in_helitai_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+ 
+&dsi_ili9881c_720p_inno_5in_helitai_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+ 
+&dsi_novatek_1080p_jdi_helitai_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+ 
+&dsi_ili9881c_720p_boe_huashi_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_truly_720_vid {
+	/delete-property/qcom,mdss-dsi-pan-enable-dynamic-fps;
+	/delete-property/qcom,mdss-dsi-pan-fps-update;
+	/delete-property/qcom,panel-supply-entries;
+};
+
+&dsi_truly_1080_cmd {
+	/delete-property/qcom,mdss-dsi-pan-enable-dynamic-fps;
+	/delete-property/qcom,mdss-dsi-pan-fps-update;
+	/delete-property/qcom,panel-supply-entries;
+	/delete-property/qcom,panel-roi-alignment;
+	/delete-property/qcom,partial-update-enabled;
+	/delete-property/qcom,ulps-enabled;
+};

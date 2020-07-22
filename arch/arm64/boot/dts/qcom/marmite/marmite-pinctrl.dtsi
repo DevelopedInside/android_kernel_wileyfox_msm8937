@@ -1,0 +1,147 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+*  Copyright (c) 2020, Jebaitedneko.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License version 2 and
+* only version 2 as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*/
+
+&soc {
+
+	tlmm: pinctrl@1000000 {
+		 tlmm_pmi_flash_led {
+			  rear_flash_led_disable: /delete-node/rear_flash_led_disable;
+			  rear_flash_led_enable: /delete-node/rear_flash_led_enable;
+		 };
+		 fp_reset_pin_default {
+			  fp_reset_default: reset_default {
+				   mux {
+					    pins = "gpio8";
+					    function = "gpio";
+				   };
+
+				   config {
+					    pins = "gpio8";
+					    drive-strength = <16>;
+					    bias-pull-up;
+				   };
+			  };
+		 };
+		 fp_reset_pin_suspend {
+			  fp_reset_suspend: reset_suspend {
+				   mux {
+					    pins = "gpio8";
+					    function = "gpio";
+				   };
+
+				   config {
+					    pins = "gpio8";
+					    drive-strength = <16>;
+					    bias-pull-none;
+				   };
+			  };
+		 };
+
+		 fp_irq_pin_default {
+			  fp_irq_default: irq_default {
+				   mux {
+					    pins = "gpio9";
+					    function = "gpio";
+				   };
+
+				   config {
+					    pins = "gpio9";
+					    drive-strength = <16>;
+					    bias-disable;
+				   };
+			  };
+		 };
+		 fp_irq_pin_suspend {
+			  fp_irq_suspend: irq_suspend {
+				   mux {
+					    pins = "gpio9";
+					    function = "gpio";
+				   };
+
+				   config {
+					    pins = "gpio9";
+					    drive-strength = <16>;
+					    bias-disable;
+				   };
+			  };
+		 };
+
+		 spi6 {
+			  spi6_default: spi6_default {
+				   mux {
+					    pins = "gpio20", "gpio21", "gpio23";
+					    function = "blsp_spi6";
+				   };
+
+				   config {
+					    pins = "gpio20", "gpio21", "gpio23";
+					    drive-strength = <12>;
+					    bias-disable = <0>;
+				   };
+			  };
+
+			  spi6_sleep: spi6_sleep {
+				   mux {
+					    pins = "gpio20", "gpio21", "gpio23";
+					    function = "gpio";
+				   };
+
+				   config {
+					    pins = "gpio20", "gpio21", "gpio23";
+					    drive-strength = <2>;
+					    bias-pull-down;
+				   };
+			  };
+
+			  spi6_cs0_active: cs0_active {
+				   mux {
+					    pins = "gpio22";
+					    function = "blsp_spi6";
+				   };
+
+				   config {
+					    pins = "gpio22";
+					    drive-strength = <2>;
+					    bias-pull-down;
+				   };
+			  };
+
+			  spi6_cs0_sleep: cs0_sleep {
+				   mux {
+					    pins = "gpio22";
+					    function = "gpio";
+				   };
+
+				   config {
+					    pins = "gpio22";
+					    drive-strength = <2>;
+					    bias-pull-up;
+				   };
+			  };
+		 };
+
+		cci {
+			cci1_active: /delete-node/cci1_active;
+			cci1_suspend: /delete-node/cci1_suspend;
+		};
+
+		pmx_mdss: pmx_mdss {
+			mdss_dsi_suspend: mdss_dsi_suspend {
+				config {	
+					/delete-property/bias-pull-down;
+					bias-pull-up;
+				};
+			};
+		};
+	};
+};
