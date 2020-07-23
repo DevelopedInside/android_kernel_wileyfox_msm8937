@@ -193,3 +193,7 @@
 &thermal_zones {
 	/delete-node/ pa-therm1-adc;
 };
+
+&apps_iommu {
+	qcom,no-aarch64;
+};
