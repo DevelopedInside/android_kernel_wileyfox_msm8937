@@ -1527,7 +1527,7 @@ static struct power_supply *get_parallel_psy(struct smbchg_chip *chip)
 		return NULL;
 	if (chip->parallel.psy)
 		return chip->parallel.psy;
-	chip->parallel.psy = power_supply_get_by_name("usb-parallel");
+	chip->parallel.psy = power_supply_get_by_name("parallel");
 	if (!chip->parallel.psy)
 		pr_smb(PR_STATUS, "parallel charger not found\n");
 	return chip->parallel.psy;
@@ -8570,6 +8570,7 @@ static int smbchg_probe(struct platform_device *pdev)
 			chip->revision[ANA_MAJOR], chip->revision[ANA_MINOR],
 			get_prop_batt_present(chip),
 			chip->dc_present, chip->usb_present);
+	smbchg_charging_en(chip,true);//TQY
 	return 0;
 
 unregister_led_class:
