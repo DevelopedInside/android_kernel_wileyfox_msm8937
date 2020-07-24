@@ -37,6 +37,10 @@
 #define MSM_INT_DIGITAL_CODEC "msm-dig-codec"
 #define PMIC_INT_ANALOG_CODEC "analog-codec"
 
+#ifdef CONFIG_AUDIO_PA_87319
+extern unsigned char AW87319_Audio_Speaker(void);
+#endif
+
 enum btsco_rates {
 	RATE_8KHZ_ID,
 	RATE_16KHZ_ID,
@@ -326,7 +330,6 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 {
 	struct snd_soc_card *card = codec->component.card;
 	struct msm_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
-	int ret;
 
 	if (!gpio_is_valid(pdata->spk_ext_pa_gpio)) {
 		pr_err("%s: Invalid gpio: %d\n", __func__,
@@ -337,25 +340,27 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 	pr_debug("%s: %s external speaker PA\n", __func__,
 		enable ? "Enable" : "Disable");
 
+#ifdef CONFIG_AUDIO_PA_87319
 	if (enable) {
-		ret =  msm_cdc_pinctrl_select_active_state(
-					pdata->spk_ext_pa_gpio_p);
-		if (ret) {
-			pr_err("%s: gpio set cannot be de-activated %s\n",
-					__func__, "ext_spk_gpio");
-			return ret;
-		}
 		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
+		AW87319_Audio_Speaker();
 	} else {
 		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, enable);
-		ret = msm_cdc_pinctrl_select_sleep_state(
-				pdata->spk_ext_pa_gpio_p);
-		if (ret) {
-			pr_err("%s: gpio set cannot be de-activated %s\n",
-					__func__, "ext_spk_gpio");
-			return ret;
-		}
 	}
+#else
+	gpio_direction_output(pdata->spk_ext_pa_gpio,1);
+	  if (enable) {
+                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 1);
+		usleep_range(2,2);
+		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 0);
+                usleep_range(2,2);
+		gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 1);
+                usleep_range(10,10);
+        } else {
+                gpio_set_value_cansleep(pdata->spk_ext_pa_gpio, 0);
+		usleep_range(10,10);
+        }
+#endif
 	return 0;
 }
 

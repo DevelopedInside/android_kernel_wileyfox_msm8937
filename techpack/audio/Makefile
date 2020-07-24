@@ -105,6 +105,7 @@ endif
 ifeq ($(CONFIG_ARCH_MSM8937), y)
 LINUXINCLUDE    += \
                 -include $(srctree)/techpack/audio/config/sdm450autoconf.h
+export CONFIG_AUDIO_PA_87319=y
 endif
 ifeq ($(CONFIG_ARCH_MSM8917), y)
 LINUXINCLUDE    += \
