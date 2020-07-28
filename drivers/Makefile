@@ -8,6 +8,9 @@
 obj-y				+= irqchip/
 obj-y				+= bus/
 
+#for fingerprint
+obj-y				+= gf/
+
 obj-$(CONFIG_GENERIC_PHY)	+= phy/
 
 obj-$(CONFIG_VSERVICES_SUPPORT)	+= vservices/
