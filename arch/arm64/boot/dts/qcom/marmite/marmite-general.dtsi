@@ -185,3 +185,11 @@
 	        android,ramoops-ecc-info = <0 16 0 0>; /* < block_size, ecc_size, sym_size, poly >, only ecc_size will suffice to enable ecc */
 	};
 };
+
+&pm8937_vadc {
+	/delete-node/ chan@11;
+};
+
+&thermal_zones {
+	/delete-node/ pa-therm1-adc;
+};
