@@ -143,5 +143,140 @@
 				};
 			};
 		};
+
+		nfc {
+			nfc_int_active: nfc_int_active {
+				/* active state */
+				mux {
+					/* GPIO 47 NFC Read Interrupt */
+					pins = "gpio17";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio17";
+					drive-strength = <2>; /* 2 MA */
+					bias-pull-up;
+				};
+			};
+
+			nfc_int_suspend: nfc_int_suspend {
+				/* sleep state */
+				mux {
+					/* GPIO 47 NFC Read Interrupt */
+					pins = "gpio17";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio17";
+					drive-strength = <2>; /* 2 MA */
+					bias-pull-up;
+				};
+			};
+
+			nfc_enable_active: nfc_enable_active {
+				/* active state */
+    				mux {
+      					/* 16: NFC ENABLE; 130:NFC FIRM */
+      					pins = "gpio16", "gpio130";
+      					function = "gpio";
+    				};
+
+    				config {
+      					pins = "gpio16", "gpio130";
+      					drive-strength = <2>; /* 2 MA */
+      					bias-pull-up;
+    				};
+  			};
+
+			nfc_enable_suspend: nfc_enable_suspend {
+    				/* sleep state */
+    				mux {
+      					pins = "gpio16", "gpio130";
+      					function = "gpio";
+    				};
+
+    				config {
+      					pins = "gpio16", "gpio130";
+      					drive-strength = <2>; /* 2 MA */
+      					bias-disable;
+    				};
+  			};
+
+  			nfc_clk_req_active: nfc_clk_req_active {
+    				/* active state */
+    				mux {
+      					/* 31: NFC CLOCK REQUEST */
+      					pins = "gpio5";
+      					function = "gpio";
+    				};
+
+    				config {
+      					pins = "gpio5";
+      					drive-strength = <2>; /* 2 MA */
+      					bias-pull-up;
+   				};
+  			};
+
+ 			nfc_clk_req_suspend: nfc_clk_req_suspend {
+				/* sleep state */
+    				mux {
+      					/* 113: NFC CLOCK REQUEST */
+      					pins = "gpio5";
+      					function = "gpio";
+    				};
+
+    				config {
+      					pins = "gpio5";
+      					drive-strength = <2>; /* 2 MA */
+      					bias-disable;
+    				};
+  			};
+		};
 	};
+};
+
+&spmi_bus {
+	qcom,pm8937@0 {
+		pm8937_gpios: gpios {
+			compatible = "qcom,spmi-gpio";
+			/* shifted from <0xc000 0x800>, refer dmesg to get your shifts */
+			reg = <0xc400 0x800>;
+			interrupts = <0x0 0xc0 0 IRQ_TYPE_NONE>,
+				     <0x0 0xc1 0 IRQ_TYPE_NONE>,
+				     <0x0 0xc4 0 IRQ_TYPE_NONE>,
+				     <0x0 0xc6 0 IRQ_TYPE_NONE>,
+				     <0x0 0xc7 0 IRQ_TYPE_NONE>;
+			interrupt-names = "pm8937_gpio1", "pm8937_gpio2",
+					  "pm8937_gpio5", "pmi8937_gpio7",
+					  "pm8937_gpio8";
+			gpio-controller;
+			#gpio-cells = <2>;
+			qcom,gpios-disallowed = <3 4 6>;
+		};
+	};
+};
+
+&i2c_5 { /* BLSP2 QUP1 (NFC) */
+	status = "ok";
+  	nq@28 {
+		compatible = "qcom,nq-nci";
+    		reg = <0x28>;
+    		qcom,nq-irq = <&tlmm 17 0x00>;
+    		qcom,nq-ven = <&tlmm 16 0x00>;
+    		qcom,nq-firm = <&tlmm 130 0x00>;
+    		qcom,nq-clkreq = <&tlmm 5 0x00>;
+    		interrupt-parent = <&tlmm>;
+    		qcom,clk-src = "BBCLK2";
+    		interrupts = <17 0>;
+    		interrupt-names = "nfc_irq";
+        	pinctrl-names = "nfc_active", "nfc_suspend";
+        	pinctrl-0 = <&nfc_int_active &nfc_enable_active
+                &nfc_clk_req_active>;
+        	pinctrl-1 = <&nfc_int_suspend &nfc_enable_suspend
+                &nfc_clk_req_suspend>;
+    		clocks = <&clock_gcc clk_bb_clk2_pin>;
+    		clock-names = "ref_clk";
+  	};
 };
