@@ -432,6 +432,7 @@ static s32 _DrvMainHotknotRegistry(void);
 ssize_t DrvMainProcfsChipTypeRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -441,9 +442,13 @@ ssize_t DrvMainProcfsChipTypeRead(struct file *pFile, char __user *pBuffer, size
         return 0;
     }
 
-    nLength = sprintf(pBuffer, "%d", g_ChipType);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", g_ChipType);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }			  
@@ -520,6 +525,7 @@ ssize_t DrvMainProcfsFirmwareDataWrite(struct file *pFile, const char __user *pB
 ssize_t DrvMainProcfsFirmwareUpdateRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -528,12 +534,16 @@ ssize_t DrvMainProcfsFirmwareUpdateRead(struct file *pFile, char __user *pBuffer
     {
         return 0;
     }
-    
-    nLength = sprintf(pBuffer, "%d", _gIsUpdateComplete);
+
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", _gIsUpdateComplete);
 
     DBG(&g_I2cClient->dev, "*** _gIsUpdateComplete = %d ***\n", _gIsUpdateComplete);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -563,6 +573,7 @@ ssize_t DrvMainProcfsFirmwareUpdateWrite(struct file *pFile, const char __user *
 ssize_t DrvMainProcfsCustomerFirmwareVersionRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() _gFwVersion = %s ***\n", __func__, _gFwVersion);
 
@@ -572,9 +583,13 @@ ssize_t DrvMainProcfsCustomerFirmwareVersionRead(struct file *pFile, char __user
         return 0;
     }
 
-    nLength = sprintf(pBuffer, "%s\n", _gFwVersion);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", _gFwVersion);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -593,6 +608,7 @@ ssize_t DrvMainProcfsCustomerFirmwareVersionWrite(struct file *pFile, const char
 ssize_t DrvMainProcfsPlatformFirmwareVersionRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() _gPlatformFwVersion = %s ***\n", __func__, _gPlatformFwVersion);
 
@@ -602,9 +618,13 @@ ssize_t DrvMainProcfsPlatformFirmwareVersionRead(struct file *pFile, char __user
         return 0;
     }
 
-    nLength = sprintf(pBuffer, "%s\n", _gPlatformFwVersion);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", _gPlatformFwVersion);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -621,6 +641,7 @@ ssize_t DrvMainProcfsPlatformFirmwareVersionWrite(struct file *pFile, const char
 ssize_t DrvMainProcfsDeviceDriverVersionRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -630,9 +651,13 @@ ssize_t DrvMainProcfsDeviceDriverVersionRead(struct file *pFile, char __user *pB
         return 0;
     }
 
-    nLength = sprintf(pBuffer, "%s", DEVICE_DRIVER_RELEASE_VERSION);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s", DEVICE_DRIVER_RELEASE_VERSION);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -648,6 +673,7 @@ ssize_t DrvMainProcfsSdCardFirmwareUpdateRead(struct file *pFile, char __user *p
 {
     u16 nMajor = 0, nMinor = 0;
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -661,9 +687,13 @@ ssize_t DrvMainProcfsSdCardFirmwareUpdateRead(struct file *pFile, char __user *p
 
     DBG(&g_I2cClient->dev, "*** %s() _gFwVersion = %s ***\n", __func__, _gFwVersion);
 
-    nLength = sprintf(pBuffer, "%s\n", _gFwVersion);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", _gFwVersion);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -717,6 +747,7 @@ ssize_t DrvMainProcfsSdCardFirmwareUpdateWrite(struct file *pFile, const char __
 ssize_t DrvMainProcfsSeLinuxLimitFirmwareUpdateRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -739,11 +770,15 @@ ssize_t DrvMainProcfsSeLinuxLimitFirmwareUpdateRead(struct file *pFile, char __u
         DBG(&g_I2cClient->dev, "Update SUCCESS\n");
     }
 
-    nLength = sprintf(pBuffer, "%d", _gIsUpdateComplete);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", _gIsUpdateComplete);
 
     DBG(&g_I2cClient->dev, "*** _gIsUpdateComplete = %d ***\n", _gIsUpdateComplete);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -751,6 +786,7 @@ ssize_t DrvMainProcfsSeLinuxLimitFirmwareUpdateRead(struct file *pFile, char __u
 ssize_t DrvMainProcfsForceFirmwareUpdateRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -765,11 +801,15 @@ ssize_t DrvMainProcfsForceFirmwareUpdateRead(struct file *pFile, char __user *pB
     IS_FORCE_TO_UPDATE_FIRMWARE_ENABLED = 1; // Enable force firmware update
     _gFeatureSupportStatus = IS_FORCE_TO_UPDATE_FIRMWARE_ENABLED;
 
-    nLength = sprintf(pBuffer, "%d", _gFeatureSupportStatus);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", _gFeatureSupportStatus);
 
     DBG(&g_I2cClient->dev, "*** _gFeatureSupportStatus = %d ***\n", _gFeatureSupportStatus);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -780,6 +820,7 @@ ssize_t DrvMainProcfsFirmwareDebugRead(struct file *pFile, char __user *pBuffer,
     u8 nBank, nAddr;
     u16 szRegData[MAX_DEBUG_REGISTER_NUM] = {0};
     u8 szOut[MAX_DEBUG_REGISTER_NUM*25] = {0}, szValue[10] = {0};
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -823,9 +864,13 @@ ssize_t DrvMainProcfsFirmwareDebugRead(struct file *pFile, char __user *pBuffer,
         strcat(szOut, "\n");
     }
 
-    nLength = sprintf(pBuffer, "%s\n", szOut);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", szOut);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
     
     return nLength;
 }
@@ -886,6 +931,7 @@ ssize_t DrvMainProcfsFirmwareSetDebugValueRead(struct file *pFile, char __user *
     u8 nBank, nAddr;
     u16 szRegData[MAX_DEBUG_REGISTER_NUM] = {0};
     u8 szOut[MAX_DEBUG_REGISTER_NUM*25] = {0}, szValue[10] = {0};
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -929,9 +975,13 @@ ssize_t DrvMainProcfsFirmwareSetDebugValueRead(struct file *pFile, char __user *
         strcat(szOut, "\n");
     }
 
-    nLength = sprintf(pBuffer, "%s\n", szOut);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", szOut);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
     
     return nLength;
 }
@@ -1016,6 +1066,7 @@ ssize_t DrvMainProcfsFirmwareSmBusDebugRead(struct file *pFile, char __user *pBu
     u8 szSmBusRxData[MAX_I2C_TRANSACTION_LENGTH_LIMIT] = {0};
     u8 szOut[MAX_I2C_TRANSACTION_LENGTH_LIMIT*2] = {0};
     u8 szValue[10] = {0};
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1054,9 +1105,13 @@ ssize_t DrvMainProcfsFirmwareSmBusDebugRead(struct file *pFile, char __user *pBu
         strcat(szOut, "\n");
     }
 
-    nLength = sprintf(pBuffer, "%s\n", szOut);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", szOut);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
     
     return nLength;
 }
@@ -1141,6 +1196,7 @@ ssize_t DrvMainProcfsFirmwareSetDQMemValueRead(struct file *pFile, char __user *
     u8 nBank, nAddr;
     u32 szRegData[MAX_DEBUG_REGISTER_NUM] = {0};
     u8 szOut[MAX_DEBUG_REGISTER_NUM*25] = {0}, szValue[10] = {0};
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1174,9 +1230,13 @@ ssize_t DrvMainProcfsFirmwareSetDQMemValueRead(struct file *pFile, char __user *
         strcat(szOut, "\n");
     }
 
-    nLength = sprintf(pBuffer, "%s\n", szOut);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", szOut);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1272,6 +1332,7 @@ ssize_t DrvMainProcfsFirmwareSetDQMemValueWrite(struct file *pFile, const char _
 ssize_t DrvMainProcfsMpTestRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1283,9 +1344,13 @@ ssize_t DrvMainProcfsMpTestRead(struct file *pFile, char __user *pBuffer, size_t
 
     DBG(&g_I2cClient->dev, "*** ctp mp test status = %d ***\n", DrvIcFwLyrGetMpTestResult());
 
-    nLength = sprintf(pBuffer, "%d", DrvIcFwLyrGetMpTestResult());
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", DrvIcFwLyrGetMpTestResult());
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1381,6 +1446,7 @@ ssize_t DrvMainProcfsMpTestFailChannelWrite(struct file *pFile, const char __use
 ssize_t DrvMainProcfsMpTestScopeRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1395,11 +1461,15 @@ ssize_t DrvMainProcfsMpTestScopeRead(struct file *pFile, char __user *pBuffer, s
     {
         DrvIcFwLyrGetMpTestScope(&g_TestScopeInfo);
 
-        nLength = sprintf(pBuffer, "%d,%d,%d", g_TestScopeInfo.nMx, g_TestScopeInfo.nMy, g_TestScopeInfo.nKeyNum);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%d,%d,%d", g_TestScopeInfo.nMx, g_TestScopeInfo.nMy, g_TestScopeInfo.nKeyNum);
     }  
 #endif //CONFIG_ENABLE_CHIP_TYPE_MSG26XXM || CONFIG_ENABLE_CHIP_TYPE_MSG28XX
     
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1418,6 +1488,7 @@ ssize_t DrvMainProcfsMpTestScopeWrite(struct file *pFile, const char __user *pBu
 ssize_t DrvMainProcfsFirmwareModeRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1433,7 +1504,8 @@ ssize_t DrvMainProcfsFirmwareModeRead(struct file *pFile, char __user *pBuffer, 
 
         DBG(&g_I2cClient->dev, "%s() firmware mode = 0x%x\n", __func__, g_FirmwareMode);
 
-        nLength = sprintf(pBuffer, "%x", g_FirmwareMode);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%x", g_FirmwareMode);
     }
     else if (g_ChipType == CHIP_TYPE_MSG28XX)
     {
@@ -1442,7 +1514,8 @@ ssize_t DrvMainProcfsFirmwareModeRead(struct file *pFile, char __user *pBuffer, 
 
         DBG(&g_I2cClient->dev, "%s() firmware mode = 0x%x\n", __func__, g_MutualFirmwareInfo.nFirmwareMode);
 
-        nLength = sprintf(pBuffer, "%x", g_MutualFirmwareInfo.nFirmwareMode);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%x", g_MutualFirmwareInfo.nFirmwareMode);
     }
     else if (g_ChipType == CHIP_TYPE_MSG21XXA || g_ChipType == CHIP_TYPE_MSG22XX)
     {
@@ -1451,10 +1524,14 @@ ssize_t DrvMainProcfsFirmwareModeRead(struct file *pFile, char __user *pBuffer, 
 
         DBG(&g_I2cClient->dev, "%s() firmware mode = 0x%x, can change firmware mode = %d\n", __func__, g_SelfFirmwareInfo.nFirmwareMode, g_SelfFirmwareInfo.nIsCanChangeFirmwareMode);
 
-        nLength = sprintf(pBuffer, "%x,%d", g_SelfFirmwareInfo.nFirmwareMode, g_SelfFirmwareInfo.nIsCanChangeFirmwareMode);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%x,%d", g_SelfFirmwareInfo.nFirmwareMode, g_SelfFirmwareInfo.nIsCanChangeFirmwareMode);
     }
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1503,6 +1580,7 @@ ssize_t DrvMainProcfsFirmwareModeWrite(struct file *pFile, const char __user *pB
 ssize_t DrvMainProcfsFirmwareSensorRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1516,11 +1594,13 @@ ssize_t DrvMainProcfsFirmwareSensorRead(struct file *pFile, char __user *pBuffer
     {
         if (g_MutualFirmwareInfo.nLogModePacketHeader == 0xA5 || g_MutualFirmwareInfo.nLogModePacketHeader == 0xAB)
         {
-            nLength = sprintf(pBuffer, "%d,%d", g_MutualFirmwareInfo.nMx, g_MutualFirmwareInfo.nMy);
+            memset(buf, 0, sizeof(buf));
+            nLength = sprintf(buf, "%d,%d", g_MutualFirmwareInfo.nMx, g_MutualFirmwareInfo.nMy);
         }
         else if (g_MutualFirmwareInfo.nLogModePacketHeader == 0xA7)
         {
-            nLength = sprintf(pBuffer, "%d,%d,%d,%d", g_MutualFirmwareInfo.nMx, g_MutualFirmwareInfo.nMy, g_MutualFirmwareInfo.nSs, g_MutualFirmwareInfo.nSd);
+            memset(buf, 0, sizeof(buf));
+            nLength = sprintf(buf, "%d,%d,%d,%d", g_MutualFirmwareInfo.nMx, g_MutualFirmwareInfo.nMy, g_MutualFirmwareInfo.nSs, g_MutualFirmwareInfo.nSd);
         }
         else
         {
@@ -1530,10 +1610,14 @@ ssize_t DrvMainProcfsFirmwareSensorRead(struct file *pFile, char __user *pBuffer
     }
     else if (g_ChipType == CHIP_TYPE_MSG21XXA || g_ChipType == CHIP_TYPE_MSG22XX)
     {
-        nLength = sprintf(pBuffer, "%d", g_SelfFirmwareInfo.nLogModePacketLength);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%d", g_SelfFirmwareInfo.nLogModePacketLength);
     }
     
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1548,6 +1632,7 @@ ssize_t DrvMainProcfsFirmwareSensorWrite(struct file *pFile, const char __user *
 ssize_t DrvMainProcfsFirmwarePacketHeaderRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1559,14 +1644,19 @@ ssize_t DrvMainProcfsFirmwarePacketHeaderRead(struct file *pFile, char __user *p
 
     if (g_ChipType == CHIP_TYPE_MSG26XXM || g_ChipType == CHIP_TYPE_MSG28XX)
     {
-        nLength = sprintf(pBuffer, "%d", g_MutualFirmwareInfo.nLogModePacketHeader);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%d", g_MutualFirmwareInfo.nLogModePacketHeader);
     }
     else if (g_ChipType == CHIP_TYPE_MSG21XXA || g_ChipType == CHIP_TYPE_MSG22XX)
     {
-        nLength = sprintf(pBuffer, "%d", g_SelfFirmwareInfo.nLogModePacketHeader);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%d", g_SelfFirmwareInfo.nLogModePacketHeader);
     }    
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1706,6 +1796,7 @@ static struct attribute_group attr_group = {
 ssize_t DrvMainProcfsQueryFeatureSupportStatusRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1715,11 +1806,15 @@ ssize_t DrvMainProcfsQueryFeatureSupportStatusRead(struct file *pFile, char __us
         return 0;
     }
 
-    nLength = sprintf(pBuffer, "%d", _gFeatureSupportStatus);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", _gFeatureSupportStatus);
 
     DBG(&g_I2cClient->dev, "*** _gFeatureSupportStatus = %d ***\n", _gFeatureSupportStatus);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1783,6 +1878,7 @@ ssize_t DrvMainProcfsQueryFeatureSupportStatusWrite(struct file *pFile, const ch
 ssize_t DrvMainProcfsChangeFeatureSupportStatusRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1792,11 +1888,15 @@ ssize_t DrvMainProcfsChangeFeatureSupportStatusRead(struct file *pFile, char __u
         return 0;
     }
 
-    nLength = sprintf(pBuffer, "%d", _gFeatureSupportStatus);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", _gFeatureSupportStatus);
 
     DBG(&g_I2cClient->dev, "*** _gFeatureSupportStatus = %d ***\n", _gFeatureSupportStatus);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -1898,6 +1998,7 @@ ssize_t DrvMainProcfsChangeFeatureSupportStatusWrite(struct file *pFile, const c
 ssize_t DrvMainProcfsGestureWakeupModeRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -1910,14 +2011,19 @@ ssize_t DrvMainProcfsGestureWakeupModeRead(struct file *pFile, char __user *pBuf
 #ifdef CONFIG_SUPPORT_64_TYPES_GESTURE_WAKEUP_MODE
     DBG(&g_I2cClient->dev, "g_GestureWakeupMode = 0x%x, 0x%x\n", g_GestureWakeupMode[0], g_GestureWakeupMode[1]);
 
-    nLength = sprintf(pBuffer, "%x,%x", g_GestureWakeupMode[0], g_GestureWakeupMode[1]);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%x,%x", g_GestureWakeupMode[0], g_GestureWakeupMode[1]);
 #else
     DBG(&g_I2cClient->dev, "g_GestureWakeupMode = 0x%x\n", g_GestureWakeupMode[0]);
 
-    nLength = sprintf(pBuffer, "%x", g_GestureWakeupMode[0]);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%x", g_GestureWakeupMode[0]);
 #endif //CONFIG_SUPPORT_64_TYPES_GESTURE_WAKEUP_MODE
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -2542,6 +2648,7 @@ ssize_t DrvMainProcfsGestureWakeupModeWrite(struct file *pFile, const char __use
 ssize_t DrvMainProcfsGestureDebugModeRead(struct file *pFile, char __user *pBuffer, size_t nCount, loff_t *pPos)
 {
     u32 nLength = 0;
+    char buf[256];
     
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -2553,9 +2660,13 @@ ssize_t DrvMainProcfsGestureDebugModeRead(struct file *pFile, char __user *pBuff
     
     DBG(&g_I2cClient->dev, "g_GestureDebugMode = 0x%x\n", g_GestureDebugMode); // add for debug
 
-    nLength = sprintf(pBuffer, "%d", g_GestureDebugMode);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d", g_GestureDebugMode);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -2691,6 +2802,7 @@ ssize_t DrvMainProcfsGestureInforModeRead(struct file *pFile, char __user *pBuff
     u32 szLogGestureInfo[GESTURE_WAKEUP_INFORMATION_PACKET_LENGTH] = {0};
     u32 i = 0;
     u32 nLength = 0;
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -2760,9 +2872,13 @@ ssize_t DrvMainProcfsGestureInforModeRead(struct file *pFile, char __user *pBuff
         strcat(szOut, ",");
     }
 
-    nLength = sprintf(pBuffer, "%s\n", szOut);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%s\n", szOut);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -2796,6 +2912,7 @@ ssize_t DrvMainProcfsReportRateRead(struct file *pFile, char __user *pBuffer, si
     struct timeval tEndTime;
     suseconds_t nStartTime, nEndTime, nElapsedTime;
     u32 nLength = 0;
+   char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -2837,9 +2954,13 @@ ssize_t DrvMainProcfsReportRateRead(struct file *pFile, char __user *pBuffer, si
     g_InterruptCount = 0; // Reset count
     g_ValidTouchCount = 0;
 
-    nLength = sprintf(pBuffer, "%d,%d", g_InterruptReportRate, g_ValidTouchReportRate);
+    memset(buf, 0, sizeof(buf));
+    nLength = sprintf(buf, "%d,%d", g_InterruptReportRate, g_ValidTouchReportRate);
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
@@ -2869,6 +2990,7 @@ ssize_t DrvMainProcfsGloveModeRead(struct file *pFile, char __user *pBuffer, siz
 {
     u32 nLength = 0;
     u8 ucGloveMode = 0;
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
@@ -2888,10 +3010,14 @@ ssize_t DrvMainProcfsGloveModeRead(struct file *pFile, char __user *pBuffer, siz
 
         DBG(&g_I2cClient->dev, "Glove Mode = 0x%x\n", ucGloveMode);
 
-        nLength = sprintf(pBuffer, "%x", ucGloveMode);
+        memset(buf, 0, sizeof(buf));
+        nLength = sprintf(buf, "%x", ucGloveMode);
     }
 
     *pPos += nLength;
+    if (copy_to_user(pBuffer, buf, nLength)) {
+        return -1;
+    }
 
     return nLength;
 }
