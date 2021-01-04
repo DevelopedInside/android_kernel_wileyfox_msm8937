@@ -3027,13 +3027,22 @@ ssize_t DrvMainProcfsGloveModeWrite(struct file *pFile, const char __user *pBuff
     u32 nGloveMode = 0;
     u32 i = 0;
     char *pCh = NULL;
+    char *pStr = NULL;
+    char buf[256];
 
     DBG(&g_I2cClient->dev, "*** %s() ***\n", __func__);
 
     if (pBuffer != NULL)
     {
         i = 0;
-        while ((pCh = strsep((char **)&pBuffer, ",")) && (i < 1))
+        memset(buf, 0, sizeof(buf));
+        if(copy_from_user(buf, pBuffer, nCount)) {
+            DBG(&g_I2cClient->dev, "%s() copy from user fail\n", __func__);
+            return -EFAULT;
+        }
+        buf[nCount] = '\0';
+        pStr = buf;
+        while ((pCh = strsep((char **)&pStr, ",")) && (i < 1))
         {
             DBG(&g_I2cClient->dev, "pCh = %s\n", pCh);
 
