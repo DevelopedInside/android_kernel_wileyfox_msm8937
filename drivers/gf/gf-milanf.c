@@ -586,7 +586,7 @@ static irqreturn_t gf_irq(int irq, void* handle)
 	gf_dev_t *gf_dev = (gf_dev_t *)handle;
 	if(!wake_lock_active(&gf_dev->finger_wake_lock))
 	{
-		wake_lock_timeout(&gf_dev->finger_wake_lock,2*HZ);
+		wake_lock_timeout(&gf_dev->finger_wake_lock,msecs_to_jiffies(2000));
 		printk("Finger is locked\n");
         }
 //	unsigned short irq_status = 0;
