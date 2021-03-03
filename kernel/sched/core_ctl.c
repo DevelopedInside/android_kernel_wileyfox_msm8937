@@ -495,8 +495,8 @@ static void update_running_avg(bool trigger_update)
 	 * samples every 2 jiffies, it will observe 0.5 additional running
 	 * average which rounds up to 1 task.
 	 */
-	avg = (avg + NR_RUNNING_TOLERANCE) / 100;
-	big_avg = (big_avg + NR_RUNNING_TOLERANCE) / 100;
+	avg = (avg % 100 >= NR_RUNNING_TOLERANCE ? 1 : 0) + (avg / 100);
+	big_avg = (big_avg % 100 >= NR_RUNNING_TOLERANCE ? 1 : 0) + (big_avg / 100);
 
 	for_each_possible_cpu(cpu) {
 		pcpu = &per_cpu(cpu_state, cpu);
