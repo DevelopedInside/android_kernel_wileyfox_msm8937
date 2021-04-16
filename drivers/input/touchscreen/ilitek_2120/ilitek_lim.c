@@ -1894,7 +1894,9 @@ static int fb_notifier_callback(struct notifier_block *self,
 	if (evdata && evdata->data && event == FB_EVENT_BLANK &&
 			ts && ts->client) {
 		blank = evdata->data;
-		if (*blank == FB_BLANK_UNBLANK) {
+		if (*blank == FB_BLANK_UNBLANK
+				|| *blank == FB_BLANK_NORMAL
+				|| *blank == FB_BLANK_VSYNC_SUSPEND) {
 			printk("fb_notifier_callback ilitek_ts_resume\n");
 			ilitek_ts_resume(ts);
 		}
