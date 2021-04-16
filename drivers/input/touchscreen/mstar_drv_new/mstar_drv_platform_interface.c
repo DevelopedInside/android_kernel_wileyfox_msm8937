@@ -141,7 +141,9 @@ static void DrvPlatformProcessFbNotification(struct work_struct *work) {
     PRINTF_ERR("MsDrvInterfaceTouchDeviceFbNotifierCallback");
 	
     {
-        if (pBlank == FB_BLANK_UNBLANK)
+        if (pBlank == FB_BLANK_UNBLANK
+                || pBlank == FB_BLANK_NORMAL
+                || pBlank == FB_BLANK_VSYNC_SUSPEND)
         {
             DBG(&g_I2cClient->dev, "*** %s() TP Resume ***\n", __func__);
             PRINTF_ERR(" TP Resume ");
