@@ -48,6 +48,7 @@ struct cluster_data {
 	struct task_struct *hotplug_thread;
 	unsigned int first_cpu;
 	struct kobject kobj;
+	bool disabled;
 };
 
 struct cpu_data {
@@ -300,6 +301,9 @@ static ssize_t show_global_state(const struct cluster_data *state, char *buf)
 			"\tAvail CPUs: %u\n", cluster->avail_cpus);
 		count += snprintf(buf + count, PAGE_SIZE - count,
 				"\tNeed CPUs: %u\n", cluster->need_cpus);
+		count += snprintf(buf + count, PAGE_SIZE - count,
+					"\tStatus: %s\n",
+					cluster->disabled ? "disabled" : "enabled");
 	}
 
 	return count;
@@ -342,6 +346,32 @@ static ssize_t show_not_preferred(const struct cluster_data *state, char *buf)
 	return count;
 }
 
+static ssize_t store_disable(struct cluster_data *state,
+				const char *buf, size_t count)
+{
+	unsigned int val;
+
+	if (sscanf(buf, "%u\n", &val) != 1)
+		return -EINVAL;
+
+	val = !!val;
+
+	if (state->disabled == val)
+		return count;
+
+	state->disabled = val;
+
+	if (!state->disabled)
+		wake_up_hotplug_thread(state);
+
+
+	return count;
+}
+
+static ssize_t show_disable(const struct cluster_data *state, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%u\n", state->disabled);
+}
 
 struct core_ctl_attr {
 	struct attribute attr;
@@ -369,6 +399,7 @@ core_ctl_attr_ro(need_cpus);
 core_ctl_attr_ro(online_cpus);
 core_ctl_attr_ro(global_state);
 core_ctl_attr_rw(not_preferred);
+core_ctl_attr_rw(disable);
 
 static struct attribute *default_attrs[] = {
 	&min_cpus.attr,
@@ -383,6 +414,7 @@ static struct attribute *default_attrs[] = {
 	&online_cpus.attr,
 	&global_state.attr,
 	&not_preferred.attr,
+	&disable.attr,
 	NULL
 };
 
@@ -629,6 +661,9 @@ static void wake_up_hotplug_thread(struct cluster_data *cluster)
 	struct cluster_data *cls;
 	unsigned long index = 0;
 
+	if (unlikely(cluster->disabled))
+		return;
+
 	for_each_cluster(cls, index) {
 		if (cls->hotplug_thread == current) {
 			no_wakeup = true;
@@ -653,7 +688,7 @@ static void core_ctl_timer_func(unsigned long data)
 {
 	struct cluster_data *cluster = (struct cluster_data *) data;
 
-	if (eval_need(cluster)) {
+	if (eval_need(cluster) && !cluster->disabled) {
 		unsigned long flags;
 
 		spin_lock_irqsave(&cluster->pending_lock, flags);
@@ -832,7 +867,8 @@ static int __ref cpu_callback(struct notifier_block *nfb,
 		 * so that there's no race with hotplug thread bringing up more
 		 * CPUs than necessary.
 		 */
-		if (apply_limits(cluster, cluster->need_cpus) <=
+		if (!cluster->disabled &&
+			apply_limits(cluster, cluster->need_cpus) <=
 				 cluster->online_cpus) {
 			pr_debug("Prevent CPU%d onlining\n", cpu);
 			ret = NOTIFY_BAD;
