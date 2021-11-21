@@ -459,7 +459,7 @@ static struct kobj_type ktype_core_ctl = {
 
 #define RQ_AVG_TOLERANCE 2
 #define RQ_AVG_DEFAULT_MS 20
-#define NR_RUNNING_TOLERANCE 5
+#define NR_RUNNING_TOLERANCE 50
 static unsigned int rq_avg_period_ms = RQ_AVG_DEFAULT_MS;
 
 static s64 rq_avg_timestamp_ms;
